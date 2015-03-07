@@ -8163,7 +8163,21 @@ inline int32 CLuaBaseEntity::castSpell(lua_State* L)
         quAction_t action;
         action.action = ACTION_MAGIC_START;
         action.param = lua_tointeger(L,1);
+<<<<<<< HEAD
         action.target = NULL;
+=======
+
+        if (!lua_isnil(L, 1) && lua_isuserdata(L, 1))
+        {
+            CLuaBaseEntity* PLuaBaseEntity = Lunar<CLuaBaseEntity>::check(L, 1);
+            action.target = (CBattleEntity*)PLuaBaseEntity->m_PBaseEntity;
+        }
+        else
+        {
+            action.target = nullptr;
+        }
+
+>>>>>>> c91db6bd4e5c3d13dcfd2882db651fd0129d25c9
         ((CMobEntity*)m_PBaseEntity)->PBattleAI->m_actionQueue.push(action);
     } else {
         ((CMobEntity*)m_PBaseEntity)->PBattleAI->SetLastMagicTime(0);
