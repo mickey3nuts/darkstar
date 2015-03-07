@@ -9,14 +9,14 @@ require("scripts/zones/Castle_Oztroja/TextIDs");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobEngaged
 -----------------------------------
 
-function onMobEngaged(mob,target)
+function OnMobEngaged(mob,target)
 -- target:showText(mob,YAGUDO_AVATAR_ENGAGE);
 end;
 
@@ -24,7 +24,7 @@ end;
 -- onMobDeath
 -----------------------------------
 
-function onMobDeath(mob,killer)
+function onMobDeath(mob,killer)	
 
 -- killer:showText(mob,YAGUDO_AVATAR_DEATH);
 

@@ -9,7 +9,7 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
@@ -17,6 +17,6 @@ end;
 -----------------------------------
 
 function onMobDeath(mob, killer)
-	killer:addTitle(GOLIATH_KILLER);
+	killer:addTitle(GOLIATH_KILLER);	
 
 end;

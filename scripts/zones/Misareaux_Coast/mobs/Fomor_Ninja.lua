@@ -1,13 +1,13 @@
 -----------------------------------
 -- mob : Fomor Ninja
--- zone : Misareaux_Coast
+-- zone : Misareaux_Coast 
 -----------------------------------
 
 -----------------------------------
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

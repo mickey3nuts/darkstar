@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -386,7 +386,7 @@ void CZoneEntities::SpawnMOBs(CCharEntity* PChar)
 
 		float CurrentDistance = distance(PChar->loc.p, PCurrentMob->loc.p);
 
-		if (PCurrentMob->status == STATUS_MOB &&
+		if (PCurrentMob->status == STATUS_UPDATE &&
 			CurrentDistance < 50)
 		{
 			if (MOB == PChar->SpawnMOBList.end() ||
@@ -431,7 +431,7 @@ void CZoneEntities::SpawnPETs(CCharEntity* PChar)
 		CPetEntity* PCurrentPet = (CPetEntity*)it->second;
 		SpawnIDList_t::iterator PET = PChar->SpawnPETList.lower_bound(PCurrentPet->id);
 
-		if ((PCurrentPet->status == STATUS_NORMAL || PCurrentPet->status == STATUS_MOB) &&
+		if ((PCurrentPet->status == STATUS_NORMAL || PCurrentPet->status == STATUS_UPDATE) &&
 			distance(PChar->loc.p, PCurrentPet->loc.p) < 50)
 		{
 			if (PET == PChar->SpawnPETList.end() ||
@@ -461,7 +461,7 @@ void CZoneEntities::SpawnNPCs(CCharEntity* PChar)
             CNpcEntity* PCurrentNpc = (CNpcEntity*)it->second;
             SpawnIDList_t::iterator NPC = PChar->SpawnNPCList.lower_bound(PCurrentNpc->id);
 
-            if (PCurrentNpc->status == STATUS_NORMAL || PCurrentNpc->status == STATUS_MOB)
+            if (PCurrentNpc->status == STATUS_NORMAL || PCurrentNpc->status == STATUS_UPDATE)
             {
                 if (distance(PChar->loc.p, PCurrentNpc->loc.p) < 50)
                 {

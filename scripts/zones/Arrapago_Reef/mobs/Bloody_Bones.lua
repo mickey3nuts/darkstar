@@ -9,14 +9,14 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobEngaged Action
 -----------------------------------
 
-function onMobEngaged(mob,target)
+function OnMobEngaged(mob,target)
 end;
 
 -----------------------------------

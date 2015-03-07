@@ -1,6 +1,6 @@
 ------------------------------------
 --
--- STATUSES AND MODS
+-- 	STATUSES AND MODS
 --
 -- Contains variable-ized definitions of things like core enums for use in lua scripts.
 ------------------------------------
@@ -87,6 +87,8 @@ STATUS_SHUTDOWN			= 20;
     SUBEFFECT_REPRISAL          = 6;    -- 01-0110      26
 	SUBEFFECT_WIND_SPIKES       = 7;
 	SUBEFFECT_STONE_SPIKES      = 8;
+	SUBEFFECT_DELUGE_SPIKES     = 9;
+	SUBEFFECT_DARK_SPIKES       = 10;
 	SUBEFFECT_COUNTER           = 63;
 
 -- SKILLCHAINS
@@ -728,8 +730,23 @@ EFFECT_SKILLCHAIN               = 799
 EFFECT_DYNAMIS                  = 800
 EFFECT_MEDITATE                 = 801 -- Dummy effect for SAM Meditate JA
 -- EFFECT_PLACEHOLDER              = 802 -- Description
--- 802-1022
+-- 802-1013
+------------------------------------------------
+-- Start of LegionXI custom section
+-- EFFECT_PLACEHOLDER              = 1014 -- Description
+-- EFFECT_PLACEHOLDER              = 1015 -- Description
+-- EFFECT_PLACEHOLDER              = 1016 -- Description
+EFFECT_WIND_SPIKES              = 1017
+EFFECT_STONE_SPIKES             = 1018
+EFFECT_DARK_SPIKES              = 1019
+EFFECT_SJCAP_BOOST              = 1020
+EFFECT_RAGE                     = 1021 -- NM CRUSH PUNY PLAYER WHO TAKE TOO LONG!
+EFFECT_LEGION                   = 1022
+-- End of LegionXI Custom Section
+------------------------------------------------
 -- EFFECT_PLACEHOLDER             = 1023 -- The client dat file seems to have only this many "slots", results of exceeding that are untested.
+
+
 
 
 ----------------------------------
@@ -758,12 +775,12 @@ EFFECTFLAG_MAGIC_BEGIN      = 0x0040
 EFFECTFLAG_MAGIC_END        = 0x0080
 EFFECTFLAG_ON_ZONE          = 0x0100
 EFFECTFLAG_NO_LOSS_MESSAGE  = 0x0200
-EFFECTFLAG_INVISIBLE        = 0x0400
-EFFECTFLAG_DETECTABLE       = 0x0800
-EFFECTFLAG_NO_REST          = 0x1000
+EFFECTFLAG_INVISIBLE	= 0x0400
+EFFECTFLAG_DETECTABLE	= 0x0800
+EFFECTFLAG_NO_REST 		= 0x1000
 EFFECTFLAG_PREVENT_ACTION   = 0x2000
 EFFECTFLAG_WALTZABLE        = 0x4000
-EFFECTFLAG_FOOD             = 0x8000
+EFFECTFLAG_FOOD                 = 0x8000
 EFFECTFLAG_SONG             = 0x10000
 EFFECTFLAG_ROLL             = 0x20000
 
@@ -776,7 +793,7 @@ function removeSleepEffects(target)
 end;
 
 function hasSleepEffects(target)
-	if (target:hasStatusEffect(EFFECT_SLEEP_I) or
+	if(target:hasStatusEffect(EFFECT_SLEEP_I) or
 	target:hasStatusEffect(EFFECT_SLEEP_II) or
 	target:hasStatusEffect(EFFECT_LULLABY) ) then
 		return true;
@@ -987,7 +1004,7 @@ MOD_GRAVITYRES			= 0xF9
 MOD_SLOWRES			= 0xFA
 MOD_STUNRES			= 0xFB
 MOD_CHARMRES			= 0xFC
-MOD_DEATHRES			= 0xFF
+MOD_UNKNOWN			= 0xFF
 MOD_PARALYZE			= 0x101
 MOD_MIJIN_GAKURE		= 0x102
 MOD_DUAL_WIELD			= 0x103
@@ -1031,25 +1048,25 @@ MOD_ROLL_CORSAIRS		= 0x148
 MOD_ROLL_PUPPET			= 0x149
 MOD_ROLL_DANCERS		= 0x14A
 MOD_ROLL_SCHOLARS		= 0x14B
-MOD_BUST                    = 0x14C
-MOD_FINISHING_MOVES         = 0x14D
+MOD_BUST			= 0x14C
+MOD_FINISHING_MOVES		= 0x14D
 MOD_SAMBA_DURATION          = 0x1EA -- Samba duration bonus(modId = 490)
 MOD_WALTZ_POTENTCY	        = 0x1EB -- Waltz Potentcy Bonus(modId = 491)
 MOD_CHOCO_JIG_DURATION      = 0x1EC -- Chocobo Jig duration bonus (modId = 492)
 MOD_VFLOURISH_MACC          = 0x1ED -- Violent Flourish accuracy bonus (modId = 493)
 MOD_STEP_FINISH             = 0x1EE -- Bonus finishing moves from steps (modId = 494)
 MOD_STEP_ACCURACY           = 0x193 -- Accuracy bonus for steps (modID = 403)
-MOD_SPECTRAL_JIG            = 0x1EF -- Spectral Jig duration modifier (percent increase) (modId = 495)
+MOD_SPECTRAL_JIG            = 0x1EF --Spectral Jig duration modifier (percent increase) (modId = 495)
 MOD_WALTZ_RECAST            = 0x1F1 -- (modID = 497) Waltz recast modifier (percent)
 MOD_SAMBA_PDURATION         = 0x1F2 -- (modID = 498) Samba percent duration bonus
-MOD_WIDESCAN                = 0x154
-MOD_BARRAGE_ACC             = 0x1A4 -- (modID = 420)
-MOD_ENSPELL                 = 0x155
-MOD_SPIKES                  = 0x156
-MOD_ENSPELL_DMG             = 0x157
-MOD_SPIKES_DMG              = 0x158
+MOD_WIDESCAN            	= 0x154
+MOD_BARRAGE_ACC			    =0x1A4
+MOD_ENSPELL             	= 0x155
+MOD_SPIKES              	= 0x156
+MOD_ENSPELL_DMG         	= 0x157
+MOD_SPIKES_DMG          	= 0x158
 MOD_TP_BONUS                = 0x159
-MOD_PERPETUATION_REDUCTION  = 0x15A
+MOD_PERPETUATION_REDUCTION 	= 0x15A
 MOD_FIRE_AFFINITY		= 0x15B
 MOD_EARTH_AFFINITY		= 0x15C
 MOD_WATER_AFFINITY		= 0x15D
@@ -1112,125 +1129,113 @@ MOD_REFRESH_DOWN		 = 0x195			-- plague, reduce mp
 MOD_REGAIN_DOWN			 = 0x196			-- plague, reduce tp
 
 -- Gear set modifiers
-MOD_DA_DOUBLE_DAMAGE		  = 0x198 -- Double attack's double damage chance %.
-MOD_TA_TRIPLE_DAMAGE		  = 0x199 -- Triple attack's triple damage chance %.
-MOD_ZANSHIN_DOUBLE_DAMAGE	  = 0x19A -- Zanshin's double damage chance %.
-MOD_RAPID_SHOT_DOUBLE_DAMAGE  = 0x1DF -- Rapid shot's double damage chance %.
-MOD_ABSORB_DMG_CHANCE		  = 0x1E0 -- Chance to absorb damage %
-MOD_EXTRA_DUAL_WIELD_ATTACK   = 0x1E1 -- Chance to land an extra attack when dual wielding
-MOD_EXTRA_KICK_ATTACK		  = 0x1E2 -- Occasionally allows a second Kick Attack during an attack round without the use of Footwork.
-MOD_SAMBA_DOUBLE_DAMAGE		  = 0x19F -- Double damage chance when samba is up.
-MOD_NULL_PHYSICAL_DAMAGE	  = 0x1A0 -- Chance to null physical damage.
-MOD_QUICK_DRAW_TRIPLE_DAMAGE  = 0x1A1 -- Chance to do triple damage with quick draw.
-MOD_BAR_ELEMENT_NULL_CHANCE	  = 0x1A2 -- Bar Elemental spells will occasionally nullify damage of the same element.
-MOD_GRIMOIRE_INSTANT_CAST	  = 0x1A3 -- Spells that match your current Arts will occasionally cast instantly, without recast.
+MOD_DA_DOUBLE_DAMAGE		  =0x198 -- Double attack's double damage chance %.
+MOD_TA_TRIPLE_DAMAGE		  =0x199 -- Triple attack's triple damage chance %.
+MOD_ZANSHIN_DOUBLE_DAMAGE	  =0x19A -- Zanshin's double damage chance %.
+MOD_RAPID_SHOT_DOUBLE_DAMAGE  =0x1DF -- Rapid shot's double damage chance %.
+MOD_ABSORB_DMG_CHANCE		  =0x1E0 -- Chance to absorb damage %
+MOD_EXTRA_DUAL_WIELD_ATTACK   =0x1E1 -- Chance to land an extra attack when dual wielding
+MOD_EXTRA_KICK_ATTACK		  =0x1E2 -- Occasionally allows a second Kick Attack during an attack round without the use of Footwork.
+MOD_SAMBA_DOUBLE_DAMAGE		  =0x19F -- Double damage chance when samba is up.
+MOD_NULL_PHYSICAL_DAMAGE	  =0x1A0 -- Chance to null physical damage.
+MOD_QUICK_DRAW_TRIPLE_DAMAGE  =0x1A1 -- Chance to do triple damage with quick draw.
+MOD_BAR_ELEMENT_NULL_CHANCE	  =0x1A2 -- Bar Elemental spells will occasionally nullify damage of the same element.
+MOD_GRIMOIRE_INSTANT_CAST	  =0x1A3 -- Spells that match your current Arts will occasionally cast instantly, without recast.
 
-MOD_DOUBLE_SHOT_RATE		  = 0x1A6 -- The rate that double shot can proc
-MOD_VELOCITY_SNAPSHOT_BONUS	  = 0x1A7 -- Increases Snapshot whilst Velocity Shot is up.
-MOD_VELOCITY_RATT_BONUS		  = 0x1A8 -- Increases Ranged Attack whilst Velocity Shot is up.
-MOD_SHADOW_BIND_EXT		  	  = 0x1A9 -- Extends the time of shadowbind
-MOD_ABSORB_PHYSDMG_TO_MP      = 0x1AA -- Absorbs a percentage of physical damage taken to MP.
-MOD_ENMITY_REDUCTION_PHYSICAL = 0x1AB -- Reduces Enmity decrease when taking physical damage
-MOD_SHIELD_MASTERY_TP         = 0x1E5 -- Shield mastery TP bonus when blocking with a shield (modId = 485)
-MOD_PERFECT_COUNTER_ATT		  = 0x1AC -- Raises weapon damage by 20 when countering while under the Perfect Counter effect. This also affects Weapon Rank (though not if fighting barehanded).
-MOD_FOOTWORK_ATT_BONUS		  = 0x1AD -- Raises the attack bonus of Footwork. (Tantra Gaiters +2 raise 100/1024 to 152/1024)
+MOD_DOUBLE_SHOT_RATE		  =0x1A6 -- The rate that double shot can proc
+MOD_VELOCITY_SNAPSHOT_BONUS	  =0x1A7 -- Increases Snapshot whilst Velocity Shot is up.
+MOD_VELOCITY_RATT_BONUS		  =0x1A8 -- Increases Ranged Attack whilst Velocity Shot is up.
+MOD_SHADOW_BIND_EXT		  	  =0x1A9 -- Extends the time of shadowbind
+MOD_ABSORB_DMG_TO_MP		  =0x1AA --	Absorbs a percentage of damage taken to MP.
+MOD_ENMITY_REDUCTION_PHYSICAL =0x1AB -- Reduces Enmity decrease when taking physical damage
+MOD_SHIELD_MASTERY_TP         =0x1E5 -- Shield mastery TP bonus when blocking with a shield (modId = 485)
+MOD_PERFECT_COUNTER_ATT		  =0x1AC -- Raises weapon damage by 20 when countering while under the Perfect Counter effect. This also affects Weapon Rank (though not if fighting barehanded).
+MOD_FOOTWORK_ATT_BONUS		  =0x1AD -- Raises the attack bonus of Footwork. (Tantra Gaiters +2 raise 100/1024 to 152/1024)
 
-MOD_MINNE_EFFECT              = 0x1B1 -- (modId = 433)
-MOD_MINUET_EFFECT	          = 0x1B2 -- (modId = 434)
-MOD_PAEON_EFFECT	          = 0x1B3 -- (modId = 435)
-MOD_REQUIEM_EFFECT	          = 0x1B4 -- (modId = 436)
-MOD_THRENODY_EFFECT	          = 0x1B5 -- (modId = 437)
-MOD_MADRIGAL_EFFECT	          = 0x1B6 -- (modId = 438)
-MOD_MAMBO_EFFECT	          = 0x1B7 -- (modId = 439)
-MOD_LULLABY_EFFECT	          = 0x1B8 -- (modId = 440)
-MOD_ETUDE_EFFECT	          = 0x1B9 -- (modId = 441)
-MOD_BALLAD_EFFECT	          = 0x1BA -- (modId = 442)
-MOD_MARCH_EFFECT	          = 0x1BB -- (modId = 443)
-MOD_FINALE_EFFECT	          = 0x1BC -- (modId = 444)
-MOD_CAROL_EFFECT	          = 0x1BD -- (modId = 445)
-MOD_MAZURKA_EFFECT	          = 0x1BE -- (modId = 446)
-MOD_ELEGY_EFFECT	          = 0x1BF -- (modId = 447)
-MOD_PRELUDE_EFFECT	          = 0x1C0 -- (modId = 448)
-MOD_HYMNUS_EFFECT	          = 0x1C1 -- (modId = 449)
-MOD_VIRELAI_EFFECT	          = 0x1C2 -- (modId = 450)
-MOD_SCHERZO_EFFECT            = 0x1C3 -- (modId = 451)
-MOD_ALL_SONGS_EFFECT          = 0x1C4 -- (modId = 452)
-MOD_MAXIMUM_SONGS_BONUS       = 0x1C5 -- (modId = 453)
-MOD_SONG_DURATION_BONUS       = 0x1C6 -- (modId = 454)
+MOD_MINNE_EFFECT              =0x1B1-- (modId = 433)
+MOD_MINUET_EFFECT	          =0x1B2-- (modId = 434)
+MOD_PAEON_EFFECT	          =0x1B3-- (modId = 435)
+MOD_REQUIEM_EFFECT	          =0x1B4-- (modId = 436)
+MOD_THRENODY_EFFECT	          =0x1B5-- (modId = 437)
+MOD_MADRIGAL_EFFECT	          =0x1B6-- (modId = 438)
+MOD_MAMBO_EFFECT	          =0x1B7-- (modId = 439)
+MOD_LULLABY_EFFECT	          =0x1B8-- (modId = 440)
+MOD_ETUDE_EFFECT	          =0x1B9-- (modId = 441)
+MOD_BALLAD_EFFECT	          =0x1BA-- (modId = 442)
+MOD_MARCH_EFFECT	          =0x1BB-- (modId = 443)
+MOD_FINALE_EFFECT	          =0x1BC-- (modId = 444)
+MOD_CAROL_EFFECT	          =0x1BD-- (modId = 445)
+MOD_MAZURKA_EFFECT	          =0x1BE -- (modId = 446)
+MOD_ELEGY_EFFECT	          =0x1BF-- (modId = 447)
+MOD_PRELUDE_EFFECT	          =0x1C0-- (modId = 448)
+MOD_HYMNUS_EFFECT	          =0x1C1-- (modId = 449)
+MOD_VIRELAI_EFFECT	          =0x1C2-- (modId = 450)
+MOD_SCHERZO_EFFECT            =0x1C3-- (modId = 451)
+MOD_ALL_SONGS_EFFECT          =0x1C4-- (modId = 452)
+MOD_MAXIMUM_SONGS_BONUS       =0x1C5
+MOD_SONG_DURATION_BONUS       =0x1C6
 
-MOD_QUICK_DRAW_DMG            = 0x19B -- (modId = 411)
+MOD_EAT_RAW_FISH			  = 409
+MOD_EAT_RAW_MEAT			  = 410
+MOD_QUICK_DRAW_DMG = 411
 
-MOD_QUAD_ATTACK				  = 0x1AE -- Quadruple attack chance.
+MOD_QUAD_ATTACK				  =0x1AE -- Quadruple attack chance.
 
-MOD_ADDITIONAL_EFFECT         = 0x1AF -- All additional effects (modId = 431)
-MOD_ENSPELL_DMG_BONUS         = 0x1B0
+MOD_ADDITIONAL_EFFECT         =0x1AF -- All additional effects (modId = 431)
+MOD_ENSPELL_DMG_BONUS         =0x1B0
 
-MOD_FIRE_ABSORB               = 0x1CB -- (modId = 459)
-MOD_EARTH_ABSORB              = 0x1CC -- (modId = 460)
-MOD_WATER_ABSORB              = 0x1CD -- (modId = 461)
-MOD_WIND_ABSORB               = 0x1CE -- (modId = 462)
-MOD_ICE_ABSORB                = 0x1CF -- (modId = 463)
-MOD_LTNG_ABSORB               = 0x1D0 -- (modId = 464)
-MOD_LIGHT_ABSORB              = 0x1D1 -- (modId = 465)
-MOD_DARK_ABSORB               = 0x1D2 -- (modId = 466)
+-- Auto-Reraise
+MOD_RERAISE_I                 = 0x1C8 -- Auto-Reraise. (modId = 456)
+MOD_RERAISE_II                = 0x1C9 -- Auto-Reraise II. (modId = 457)
+MOD_RERAISE_III               = 0x1CA -- Auto-Reraise III. (modId = 458)
 
-MOD_FIRE_NULL                 = 0x1D3 -- (modId = 467)
-MOD_EARTH_NULL                = 0x1D4 -- (modId = 468)
-MOD_WATER_NULL                = 0x1D5 -- (modId = 469)
-MOD_WIND_NULL                 = 0x1D6 -- (modId = 470)
-MOD_ICE_NULL                  = 0x1D7 -- (modId = 471)
-MOD_LTNG_NULL                 = 0x1D8 -- (modId = 472)
-MOD_LIGHT_NULL                = 0x1D9 -- (modId = 473)
-MOD_DARK_NULL                 = 0x1DA -- (modId = 474)
+MOD_FIRE_ABSORB               =0x1CB -- (modId = 459)
+MOD_EARTH_ABSORB              =0x1CC -- (modId = 460)
+MOD_WATER_ABSORB              =0x1CD -- (modId = 461)
+MOD_WIND_ABSORB               =0x1CE -- (modId = 462)
+MOD_ICE_ABSORB                =0x1CF-- (modId = 463)
+MOD_LTNG_ABSORB               =0x1D0 -- (modId = 464)
+MOD_LIGHT_ABSORB              =0x1D1 -- (modId = 465)
+MOD_DARK_ABSORB               =0x1D2 -- (modId = 466)
 
-MOD_MAGIC_ABSORB              = 0x1DB -- (modId = 475)
-MOD_MAGIC_NULL                = 0x1DC -- (modId = 476)
+MOD_FIRE_NULL                 =0x1D3 -- (modId = 467)
+MOD_EARTH_NULL                =0x1D4 -- (modId = 468)
+MOD_WATER_NULL                =0x1D5 -- (modId = 469)
+MOD_WIND_NULL                 =0x1D6 -- (modId = 470)
+MOD_ICE_NULL                  =0x1D7 -- (modId = 471)
+MOD_LTNG_NULL                 =0x1D8 -- (modId = 472)
+MOD_LIGHT_NULL                =0x1D9 -- (modId = 473)
+MOD_DARK_NULL                 =0x1DA -- (modId = 474)
 
-MOD_PHYS_ABSORB               = 0x200 -- (modId = 512)
+MOD_MAGIC_ABSORB              =0x1DB -- (modId = 475)
+MOD_MAGIC_NULL                =0x1DC -- (modId = 476)
 
-MOD_WARCRY_DURATION           = 0x1E3 -- Warcy duration bonus from gear
+MOD_WARCRY_DURATION           =0x1E3 -- Warcy duration bonus from gear
 
-MOD_AUSPICE_EFFECT            = 0x1E4 -- Auspice Subtle Blow Bonus (modId = 484)
-MOD_TACTICAL_PARRY            = 0x1E6 -- Tactical Parry TP Bonus (modid = 486)
-MOD_MAG_BURST_BONUS           = 0x1E7 -- Magic Burst Bonus (modid = 487)
-MOD_INHIBIT_TP                = 0x1E8 -- Inhibits TP Gain (percent) (modId = 488)
+MOD_AUSPICE_EFFECT            =0x1E4 -- Auspice Subtle Blow Bonus (modId = 484)
+MOD_TACTICAL_PARRY            =0x1E6 -- Tactical Parry TP Bonus (modid = 486)
+MOD_MAG_BURST_BONUS           =0x1E7 -- Magic Burst Bonus (modid = 487)
+MOD_INHIBIT_TP                =0x1E8 -- Inhibits TP Gain (percent) (modId = 488)
 
-MOD_GOV_CLEARS                = 0x1F0 -- Tracks GoV page completion (for 4% bonus on rewards).
+MOD_GOV_CLEARS                =0x1F0 -- Tracks GoV page completion (for 4% bonus on rewards).
 
--- Reraise (Auto Reraise, will be used by ATMA)
-MOD_RERAISE_I                 = 0x1C8 -- Reraise. (modId = 456)
-MOD_RERAISE_II                = 0x1C9 -- Reraise II. (modId = 457)
-MOD_RERAISE_III               = 0x1CA -- Reraise III. (modId = 458)
+MOD_ITEM_SPIKES_TYPE          =0x1F3 -- Type spikes an item has (modId = 499)
+MOD_ITEM_SPIKES_DMG           =0x1F4 -- Damage of an items spikes (modId = 500)
+MOD_ITEM_SPIKES_CHANCE        =0x1F5 -- Chance of an items spike proc (modId = 501)
 
-MOD_ITEM_SPIKES_TYPE          = 0x1F3 -- Type spikes an item has (modId = 499)
-MOD_ITEM_SPIKES_DMG           = 0x1F4 -- Damage of an items spikes (modId = 500)
-MOD_ITEM_SPIKES_CHANCE        = 0x1F5 -- Chance of an items spike proc (modId = 501)
+MOD_FERAL_HOWL_DURATION       =0x1F7 -- +20% duration per merit when wearing augmented Monster Jackcoat +2 (modId = 503)
 
-MOD_FERAL_HOWL_DURATION       = 0x1F7 -- +20% duration per merit when wearing augmented Monster Jackcoat +2 (modId = 503)
+MOD_MANEUVER_BONUS            =0x1F8 -- Maneuver Stat Bonus
+MOD_OVERLOAD_THRESH           =0x1F9 -- Overload Threshold Bonus
 
-MOD_MANEUVER_BONUS            = 0x1F8 -- Maneuver Stat Bonus
-MOD_OVERLOAD_THRESH           = 0x1F9 -- Overload Threshold Bonus
+MOD_EXTRA_DMG_CHANCE          =0x1FA -- Proc rate of MOD_OCC_DO_EXTRA_DMG. 111 would be 11.1% (modId = 506)
+MOD_OCC_DO_EXTRA_DMG          =0x1FB -- Multiplier for "Occasionally do x times normal damage". 250 would be 2.5 times damage. (modId = 507)
 
-MOD_EXTRA_DMG_CHANCE          = 0x1FA -- Proc rate of MOD_OCC_DO_EXTRA_DMG. 111 would be 11.1% (modId = 506)
-MOD_OCC_DO_EXTRA_DMG          = 0x1FB -- Multiplier for "Occasionally do x times normal damage". 250 would be 2.5 times damage. (modId = 507)
-
-MOD_EAT_RAW_FISH              = 0x19C -- (modId = 412)
-MOD_EAT_RAW_MEAT              = 0x19D -- (modId = 413)
-
-MOD_RETALIATION               = 0x19E -- Increases damage of Retaliation hits (modId = 414)
-MOD_AUGMENTS_THIRD_EYE        = 0x1FC -- Adds counter to 3rd eye anticipates & if using Seigan counter rate is increased by 15% (modId = 508)
-
-MOD_CLAMMING_IMPROVED_RESULTS = 0x1FD -- (modId = 509)
-MOD_CLAMMING_REDUCED_INCIDENTS= 0x1FE -- (modId = 510)
-
-MOD_CHOCOBO_RIDING_TIME       = 0x1FF -- Increases chocobo riding time (modId = 511)
-
-MOD_HARVESTING_RESULT         = 0x201 -- Improves harvesting results (modId = 513)
-MOD_LOGGING_RESULT            = 0x202 -- Improves logging results (modId = 514)
-MOD_MINNING_RESULT            = 0x203 -- Improves mining results (modId = 515)
-MOD_ABSORB_DMG_TO_MP          = 0x204 -- Unlike PLD gear mod, works on all damage types (Ethereal Earring) (modId = 516)
-
--- MOD_SPARE = 0x205 -- (modId = 517)
+-- MOD_SPARE =0x1FC -- (modId = 508)
+-- MOD_SPARE =0x1FD -- (modId = 509)
+-- MOD_SPARE =0x1FE -- (modId = 510)
+-- MOD_SPARE =0x1FF -- (modId = 511)
+-- MOD_SPARE =0x200 -- (modId = 512)
 
 ------------------------------------
 -- Merit Definitions
@@ -1735,7 +1740,7 @@ MSGBASIC_USES_BUT_MISSES		= 324 -- The <player> uses .. but misses <target>.
 MSGBASIC_CANT_BE_USED_IN_AREA	= 316 -- That action cannot be used in this area.
 MSGBASIC_REQUIRES_SHIELD		= 199 -- That action requires a shield.
 MSGBASIC_REQUIRES_COMBAT		= 525 -- .. can only be performed during battle.
-MSGBASIC_STATUS_PREVENTS        = 569 -- Your current status prevents you from using that ability.
+MSGBASIC_STATUS_PREVENTS      = 569 -- Your current status prevents you from using that ability.
 -- Distance
 MSGBASIC_TARG_OUT_OF_RANGE		= 4 -- <target> is out of range.
 MSGBASIC_UNABLE_TO_SEE_TARG		= 5 -- Unable to see <target>.
@@ -1837,7 +1842,7 @@ MOBMOD_MAGIC_COOL = 34
 MOBMOD_STANDBACK_TIME = 35
 MOBMOD_ROAM_COOL = 36
 MOBMOD_ALWAYS_AGGRO = 37
--- ID 38 available for use.
+MOBMOD_REFLECT = 38
 MOBMOD_SHARE_POS = 39
 MOBMOD_TELEPORT_CD = 40
 MOBMOD_TELEPORT_START = 41
@@ -1907,7 +1912,7 @@ MOBMOD_SHARE_TARGET = 48
     RECAST_ABILITY  = 2
 
 ------------------------------------
--- ACTION IDs
+--	ACTION IDs
 ------------------------------------
 
 ACTION_NONE						= 0;
@@ -1949,7 +1954,7 @@ ACTION_MOBABILITY_INTERRUPT		= 35;
 ACTION_LEAVE					= 36;
 
 ------------------------------------
--- ECOSYSTEM IDs
+--	ECOSYSTEM IDs
 ------------------------------------
 
 SYSTEM_ERROR			= 0;
@@ -1976,7 +1981,7 @@ SYSTEM_VERMIN			= 20;
 SYSTEM_VORAGEAN			= 21;
 
 ------------------------------------
--- Spell AOE IDs
+--	Spell AOE IDs
 ------------------------------------
 
 SPELLAOE_NONE           = 0;
@@ -1985,17 +1990,17 @@ SPELLAOE_CONAL          = 2;
 SPELLAOE_RADIAL_MANI    = 3;  -- AOE when under SCH stratagem Manifestation
 SPELLAOE_RADIAL_ACCE    = 4;  -- AOE when under SCH stratagem Accession
 SPELLAOE_PIANISSIMO     = 5;  -- Single target when under BRD JA Pianissimo
-SPELLAOE_DIFFUSION		= 6;  -- AOE when under Diffusion
+SPELLAOE_DIFFUSION		= 6;   -- AOE when under Diffusion
 
 ------------------------------------
--- Spell flag bits
+--	Spell flag bits
 ------------------------------------
 
 SPELLFLAG_NONE		= 0;
 SPELLFLAG_HIT_ALL	= 1;		-- hit all targets in range regardless of party
 
 ------------------------------------
--- Behaviour bits
+--	Behaviour bits
 ------------------------------------
 
 BEHAVIOUR_NONE				= 0x000;

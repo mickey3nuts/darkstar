@@ -1,5 +1,5 @@
 -----------------------------------
--- Area:
+-- Area: 
 -- NPC:  Proto-Ultima
 -----------------------------------
 -----------------------------------
@@ -10,7 +10,7 @@ require("scripts/globals/limbus");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

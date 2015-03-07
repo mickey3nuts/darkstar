@@ -14,8 +14,9 @@ function onMagicCastingCheck(caster,target,spell)
 end;
 
 function onSpellCast(caster,target,spell)
+	local bonus = AffinityBonus(caster, spell:getElement());
 	local dMND = (caster:getStat(MOD_MND) - target:getStat(MOD_MND));
-	local resist = applyResistance(caster,spell,target,dMND,37,0);
+	local resist = applyResistance(caster,spell,target,dMND,37,bonus);
 	if(resist < 0.5) then
 		spell:setMsg(85); -- Resist
 		return EFFECT_SLEEP_II;

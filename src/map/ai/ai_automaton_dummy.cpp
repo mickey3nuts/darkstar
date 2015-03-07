@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,14 +23,11 @@ This file is part of DarkStar-server source code.
 
 #include "ai_automaton_dummy.h"
 #include "../entities/petentity.h"
-#include "../entities/automatonentity.h"
 
 CAIAutomatonDummy::CAIAutomatonDummy(CPetEntity* PPet)
     : CAIPetDummy(PPet)
 {
-    DSP_DEBUG_BREAK_IF(PPet->getPetType() != PETTYPE_AUTOMATON);
 
-    CAutomatonEntity* PAutomaton = (CAutomatonEntity*)PPet;
 }
 
 void CAIAutomatonDummy::CheckCurrentAction(uint32 tick)

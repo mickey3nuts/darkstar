@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,12 +42,10 @@ This file is part of DarkStar-server source code.
 #include "../packets/char_jobs.h"
 #include "../packets/char_job_extra.h"
 #include "../packets/char_health.h"
-#include "../packets/char_recast.h"
 #include "../packets/char_skills.h"
 #include "../packets/char_stats.h"
 #include "../packets/char_sync.h"
 #include "../packets/char_update.h"
-#include "../packets/conquest_map.h"
 #include "../packets/delivery_box.h"
 #include "../packets/inventory_item.h"
 #include "../packets/inventory_assign.h"
@@ -61,7 +59,7 @@ This file is part of DarkStar-server source code.
 #include "../packets/message_special.h"
 #include "../packets/message_standard.h"
 #include "../packets/quest_mission_log.h"
-#include "../packets/server_ip.h"
+#include "../packets/conquest_map.h"
 
 #include "../ability.h"
 #include "../grades.h"
@@ -310,8 +308,6 @@ namespace charutils
     {
         uint8 meritPoints = 0;
         uint16 limitPoints = 0;
-        int32 HP = 0;
-        int32 MP = 0;
 
         const int8* fmtQuery =
             "SELECT "
@@ -598,8 +594,8 @@ namespace charutils
             PChar->SetMLevel(PChar->jobs.job[PChar->GetMJob()]);
             PChar->SetSLevel(PChar->jobs.job[PChar->GetSJob()]);
 
-            HP = Sql_GetIntData(SqlHandle, 3);
-            MP = Sql_GetIntData(SqlHandle, 4);
+            PChar->health.hp = Sql_GetIntData(SqlHandle, 3);
+            PChar->health.mp = Sql_GetIntData(SqlHandle, 4);
 
             PChar->profile.mhflag = (uint8)Sql_GetIntData(SqlHandle, 5);
             PChar->profile.title = (uint16)Sql_GetIntData(SqlHandle, 6);
@@ -710,15 +706,13 @@ namespace charutils
         BuildingCharSkillsTable(PChar);
         BuildingCharAbilityTable(PChar);
         BuildingCharTraitsTable(PChar);
+        PChar->UpdateHealth();
 
-        PChar->animation = (HP == 0 ? ANIMATION_DEATH : ANIMATION_NONE);
-        charutils::LoadInventory(PChar);
+        PChar->animation = (PChar->health.hp == 0 ? ANIMATION_DEATH : ANIMATION_NONE);
         PChar->m_event.EventID = luautils::OnZoneIn(PChar);
+        charutils::LoadInventory(PChar);
 
         charutils::LoadEquip(PChar);
-        PChar->health.hp = HP;
-        PChar->health.mp = MP;
-        PChar->UpdateHealth();
         luautils::OnGameIn(PChar, zoning);
     }
 
@@ -1169,7 +1163,6 @@ namespace charutils
         PChar->pushPacket(new CCharJobsPacket(PChar));
         PChar->pushPacket(new CCharStatsPacket(PChar));
         PChar->pushPacket(new CCharSkillsPacket(PChar));
-        PChar->pushPacket(new CCharRecastPacket(PChar));
         PChar->pushPacket(new CCharAbilitiesPacket(PChar));
         PChar->pushPacket(new CCharUpdatePacket(PChar));
         PChar->pushPacket(new CMenuMeritPacket(PChar));
@@ -1751,6 +1744,7 @@ namespace charutils
             if (equipSlotID == 0 && PSubItem && !PSubItem->IsShield())
                 RemoveSub(PChar);
 
+            PChar->status = STATUS_UPDATE;
             PChar->pushPacket(new CEquipPacket(slotID, equipSlotID, containerID));
         }
         else
@@ -1791,6 +1785,7 @@ namespace charutils
                     PChar->PLatentEffectContainer->AddLatentEffects(&PItem->latentList, ((CItemArmor*)PItem)->getReqLvl(), equipSlotID);
                     PChar->PLatentEffectContainer->CheckLatentsEquip(equipSlotID);
 
+                    PChar->status = STATUS_UPDATE;
                     PChar->pushPacket(new CEquipPacket(slotID, equipSlotID, containerID));
                     PChar->pushPacket(new CInventoryAssignPacket(PItem, INV_NODROP));
                 }
@@ -2700,7 +2695,7 @@ namespace charutils
     {
         DSP_DEBUG_BREAK_IF(PChar->objtype != TYPE_PC);
 
-        PChar->updatemask |= UPDATE_HP;
+        if (PChar->status == STATUS_NORMAL) PChar->status = STATUS_UPDATE;
 
         if (PChar->PParty != NULL)
         {
@@ -3311,7 +3306,6 @@ namespace charutils
             PChar->pushPacket(new CCharJobsPacket(PChar));
             PChar->pushPacket(new CCharUpdatePacket(PChar));
             PChar->pushPacket(new CCharSkillsPacket(PChar));
-            PChar->pushPacket(new CCharRecastPacket(PChar));
             PChar->pushPacket(new CCharAbilitiesPacket(PChar));
             PChar->pushPacket(new CMenuMeritPacket(PChar));
             PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
@@ -3434,6 +3428,14 @@ namespace charutils
                 charutils::AddPoints(PChar, "imperial_standing", (exp * 0.1f));
                 PChar->pushPacket(new CConquestPacket(PChar));
             }
+
+            // Custom Allied Notes Drops
+            if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_SIGIL) &&
+                (region >= 33 && region <= 40))
+            {
+                charutils::AddPoints(PChar, "allied_notes", (exp * 0.1f));
+                PChar->pushPacket(new CConquestPacket(PChar));
+            }
         }
 
         // Cruor Drops in Abyssea zones.
@@ -3442,7 +3444,7 @@ namespace charutils
         {
             uint16 TextID = luautils::GetTextIDVariable(Pzone, "CRUOR_OBTAINED");
             uint32 Total = charutils::GetPoints(PChar, "cruor");
-            uint32 Cruor = 0; // Need to work out how to do cruor chains, until then no cruor will drop unless this line is customized for non retail play.
+            uint32 Cruor = exp * 0.2f; // Need to work out how to do cruor chains, until then no cruor will drop unless this line is customized for non retail play.
 
             if (TextID == 0)
             {
@@ -3505,7 +3507,6 @@ namespace charutils
                 PChar->pushPacket(new CCharJobsPacket(PChar));
                 PChar->pushPacket(new CCharUpdatePacket(PChar));
                 PChar->pushPacket(new CCharSkillsPacket(PChar));
-                PChar->pushPacket(new CCharRecastPacket(PChar));
                 PChar->pushPacket(new CCharAbilitiesPacket(PChar));
                 PChar->pushPacket(new CMenuMeritPacket(PChar));
                 PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
@@ -4492,36 +4493,6 @@ namespace charutils
             DSP_DEBUG_BREAK_IF(true);
             return NULL;
         }
-    }
-
-    void SendToZone(CCharEntity* PChar, uint8 type, uint64 ipp)
-    {
-        Sql_Query(SqlHandle, "UPDATE accounts_sessions SET server_addr = %u, server_port = %u WHERE charid = %u;",
-            (uint32)ipp, (uint32)(ipp >> 32), PChar->id);
-
-        const int8* Query =
-            "UPDATE chars "
-            "SET "
-            "pos_zone = %u,"
-            "pos_prevzone = %u,"
-            "pos_rot = %u,"
-            "pos_x = %.3f,"
-            "pos_y = %.3f,"
-            "pos_z = %.3f,"
-            "boundary = %u "
-            "WHERE charid = %u;";
-
-        Sql_Query(SqlHandle, Query,
-            PChar->loc.destination,
-            PChar->m_moghouseID ? 0 : PChar->getZone(),
-            PChar->loc.p.rotation,
-            PChar->loc.p.x,
-            PChar->loc.p.y,
-            PChar->loc.p.z,
-            PChar->loc.boundary,
-            PChar->id);
-
-        PChar->pushPacket(new CServerIPPacket(PChar, type, ipp));
     }
 
 }; // namespace charutils

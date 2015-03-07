@@ -6,9 +6,9 @@
 -----------------------------------
 -- onMobSpawn Action
 -----------------------------------
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 	--print(mob:getName());
 end;
 
-function onMobDeath(mob, killer)
+function OnMobDeath(mob, killer)
 end;

@@ -11,7 +11,7 @@ require("scripts/globals/status");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
@@ -24,7 +24,7 @@ end;
 
 function onMobFight(mob,target)
 end;
-
+	
 
 -----------------------------------
 -- onMobDeath

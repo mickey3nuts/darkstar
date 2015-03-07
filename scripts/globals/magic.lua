@@ -318,6 +318,10 @@ end;
 -- The factor to multiply down damage (1/2 1/4 1/8 1/16) - In this format so this func can be used for enfeebs on duration.
 
 function applyResistance(player,spell,target,diff,skill,bonus)
+    -- resist everything if magic shield is active
+    if(target:hasStatusEffect(EFFECT_MAGIC_SHIELD, 0)) then
+        return 0;
+    end
 
     local resist = 1.0;
     local magicaccbonus = 0;
@@ -649,6 +653,10 @@ end;
 
 --Applies resistance for things that may not be spells - ie. Quick Draw
 function applyResistanceAbility(player,target,element,skill,bonus)
+    -- resist everything if magic shield is active
+    if(target:hasStatusEffect(EFFECT_MAGIC_SHIELD, 0)) then
+        return 0;
+    end
 
     local resist = 1.0;
     local magicaccbonus = 0;
@@ -952,7 +960,6 @@ function handleAfflatusMisery(caster, spell, dmg)
 end;
  
  function finalMagicAdjustments(caster,target,spell,dmg)
-    --Handles target's HP adjustment and returns UNSIGNED dmg (absorb message is set in this function)
 
     -- handle multiple targets
     if(caster:isSpellAoE(spell:getID())) then
@@ -991,22 +998,22 @@ end;
     dmg = utils.clamp(dmg, -99999, 99999);
     
     if (dmg < 0) then
-        dmg = target:addHP(-dmg);
+        target:addHP(-dmg);
+        dmg = -dmg;
         spell:setMsg(7);
     else
         target:delHP(dmg);
         target:updateEnmityFromDamage(caster,dmg);
-        -- Only add TP if the target is a mob
-        if (target:getObjType() ~= TYPE_PC) then
-            target:addTP(10);
-        end
+    end
+    -- Only add TP if the target is a mob
+    if (target:getObjType() ~= TYPE_PC and dmg > 0) then
+        target:addTP(10);
     end
 
     return dmg;
  end;
 
 function finalMagicNonSpellAdjustments(caster,target,ele,dmg)
-    --Handles target's HP adjustment and returns SIGNED dmg (negative values on absorb)
 
     dmg = target:magicDmgTaken(dmg);
 
@@ -1021,7 +1028,7 @@ function finalMagicNonSpellAdjustments(caster,target,ele,dmg)
     dmg = utils.clamp(dmg, -99999, 99999);
     
     if (dmg < 0) then
-        dmg = -(target:addHP(-dmg));
+        target:addHP(-dmg);
     else
         target:delHP(dmg);
     end
@@ -1033,23 +1040,25 @@ function finalMagicNonSpellAdjustments(caster,target,ele,dmg)
 end;
  
 function adjustForTarget(target,dmg,ele)
-    if (dmg > 0 and math.random(0,99) < target:getMod(absorbMod[ele])) then
+    if (math.random(0,99) < target:getMod(absorbMod[ele]) or math.random(0,99) < target:getMod(MOD_MAGIC_ABSORB)) then
         return -dmg;
     end
-    if (math.random(0,99) < target:getMod(nullMod[ele])) then
+    if (math.random(0,99) < target:getMod(nullMod[ele]) or math.random(0,99) < target:getMod(MOD_MAGIC_NULL)) then
         return 0;
     end
-    --Moved non element specific absorb and null mod checks to core
-    --TODO: update all lua calls to magicDmgTaken with appropriate element and remove this function
     return dmg;
 end;
 
-function calculateMagicBurst(caster, spell, target)
+function calculateMagicBurstAndBonus(caster, spell, target)
+    local equippedHands = caster:getEquipID(SLOT_HANDS);
+    local equippedEar1  = caster:getEquipID(SLOT_EAR1);
+    local equippedEar2  = caster:getEquipID(SLOT_EAR2);
 
     local burst = 1.0;
+    local burstBonus = 1.0;
 
 	if (spell:getSpellGroup() == 3 and not caster:hasStatusEffect(EFFECT_BURST_AFFINITY)) then
-		return burst;
+		return burst, burstBonus;
 	end
 
     local skillchainTier, skillchainCount = FormMagicBurst(spell:getElement(), target);
@@ -1070,6 +1079,16 @@ function calculateMagicBurst(caster, spell, target)
 			burst = 1.0;
 		end
 
+		-- Get burst bonus from gear/spell bonus
+
+        -- Sorcerer's Gloves
+        if(equippedHands == 15105 or equippedHands == 14912) then
+            burstBonus = burstBonus + 0.05;
+        end
+
+        if(equippedEar1 == 15962 or equippedEar2 == 15962) then
+            burstBonus = burstBonus + 0.05;
+        end
 
         -- TODO: This should be getting the spell ID, and checking
         --       if it is an Ancient Magic II spell.  Add 0.03
@@ -1091,12 +1110,10 @@ function calculateMagicBurst(caster, spell, target)
         --end -- if AM2+
     end
 
-    -- Add in Magic Burst Bonus Modifier
-    if (burst > 1) then
-        burst = burst + (caster:getMod(MOD_MAG_BURST_BONUS) / 100);
-    end
+    -- Add in Magic Burst Bonus Modifier. The Trait Boosts this. Eventually the gear should use this too to be cleaner.
+    burstBonus = burstBonus + (caster:getMod(MOD_MAG_BURST_BONUS) / 100);
     
-    return burst;
+    return burst, burstBonus;
 end;
 
 function addBonuses(caster, spell, target, dmg, bonusmab)
@@ -1165,7 +1182,7 @@ function addBonuses(caster, spell, target, dmg, bonusmab)
 
 	dmg = math.floor(dmg * dayWeatherBonus);
 
-    local burst = calculateMagicBurst(caster, spell, target);
+    local burst, burstBonus = calculateMagicBurstAndBonus(caster, spell, target);
 
   if(burst > 1.0) then
 		spell:setMsg(spell:getMagicBurstMessage()); -- "Magic Burst!"

@@ -10,7 +10,7 @@ require("scripts/globals/quests");
 -- onMobSpawn
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

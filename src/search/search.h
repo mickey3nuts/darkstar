@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,9 +31,6 @@ struct search_config_t
     const int8* mysql_login;        // mysql login    -> default root
     const int8* mysql_password;     // mysql pass     -> default root
     const int8* mysql_database;     // mysql database -> default dspdb
-	bool		expire_auctions;	// If true, then start task to expire old auctions off the auction house
-	uint8		expire_days;		// Number of days to keep stuff on the auction house
-	int16		expire_interval;	// How often the task should run (time * 1000) in seconds
 };
 
 struct login_config_t

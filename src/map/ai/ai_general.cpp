@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -227,7 +227,6 @@ void CAIGeneral::SetCurrentAction(ACTIONTYPE Action, uint16 TargetID)
                 case ACTION_ITEM_USING:    m_ActionType = ACTION_ITEM_INTERRUPT;  CheckCurrentAction(m_Tick); break;
                 case ACTION_MAGIC_CASTING: m_ActionType = ACTION_MAGIC_INTERRUPT; CheckCurrentAction(m_Tick); break;
 				case ACTION_MOBABILITY_START: m_ActionType = ACTION_MOBABILITY_INTERRUPT; CheckCurrentAction(m_Tick); break;
-                case ACTION_MOBABILITY_USING: m_ActionType = ACTION_MOBABILITY_INTERRUPT; CheckCurrentAction(m_Tick); break;
             }
             m_ActionType = Action;
 			m_ActionTargetID = TargetID;

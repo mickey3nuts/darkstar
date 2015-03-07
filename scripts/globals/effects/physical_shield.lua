@@ -11,11 +11,7 @@ require("scripts/globals/status");
 -----------------------------------
 
 function onEffectGain(target,effect)
-    if (effect:getPower() < 2) then
-        target:addMod(MOD_UDMGPHYS, -100);
-    else
-        target:addMod(MOD_PHYS_ABSORB, 100);
-    end
+    target:addMod(MOD_UDMGPHYS, -100);
 end;
 
 -----------------------------------
@@ -30,9 +26,5 @@ end;
 -----------------------------------
 
 function onEffectLose(target,effect)
-    if (effect:getPower() < 2) then
-        target:delMod(MOD_UDMGPHYS, -100);
-    else
-        target:delMod(MOD_PHYS_ABSORB, 100);
-    end
+    target:delMod(MOD_UDMGPHYS, -100);
 end;

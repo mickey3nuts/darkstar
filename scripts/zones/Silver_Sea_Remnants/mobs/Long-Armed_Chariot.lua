@@ -1,5 +1,5 @@
 -----------------------------------
--- Area:
+-- Area: 
 -- NPC:  Long-Armed_Chariot
 -----------------------------------
 
@@ -9,7 +9,7 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

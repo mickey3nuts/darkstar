@@ -1,14 +1,13 @@
 -----------------------------------
 -- Area: Konschtat Highlands
---  NPC: Plaiaude
--- Type: Chocobo Renter
+-- NPC:  Plaiaude
+-- Type: Chocobo Vendor
 -- @pos 244.705 24.034 296.973 108
 -----------------------------------
 
-require("scripts/globals/chocobo");
-require("scripts/globals/keyitems");
 require("scripts/globals/settings");
-require("scripts/globals/status");
+require("scripts/globals/keyitems");
+require("scripts/globals/quests");
 
 -----------------------------------
 -- onTrade Action
@@ -22,45 +21,40 @@ end;
 -----------------------------------
 
 function onTrigger(player,npc)
-    local level = player:getMainLvl();
-    local gil = player:getGil();
 
-    if (player:hasKeyItem(CHOCOBO_LICENSE) and level >= 20) then
-        local price = getChocoboPrice(player);
-        player:setLocalVar("chocoboPriceOffer",price);
+local price = 100;
+local gil = player:getGil();
+local hasLicense = player:hasKeyItem(CHOCOBO_LICENSE);
+local ChocobosWounds = player:getQuestStatus(JEUNO,CHOCOBO_S_WOUNDS);
+local level = player:getMainLvl();
 
-        player:startEvent(0x038E,price,gil);
-    else
-        player:startEvent(0x038F);
-    end
+	if ((hasLicense and level >= 15) or (level >=15 and ChocobosWounds == QUEST_COMPLETED)) then
+		player:startEvent(0x038e,price,gil);
+	else
+		player:startEvent(0x038f,price,gil);
+	end
+
 end;
 
------------------------------------
--- onEventUpdate
------------------------------------
-
-function onEventUpdate(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
-end;
   
 -----------------------------------
 -- onEventFinish Action
 -----------------------------------
-
 function onEventFinish(player,csid,option)
-    -- printf("CSID: %u",csid);
-    -- printf("RESULT: %u",option);
+--print("CSID:",csid);
+--print("OPTION:",option);
 
-    local price = player:getLocalVar("chocoboPriceOffer");
+	local price = 100;
+	local level = player:getMainLvl();
 
-    if (csid == 0x038E and option == 0) then
+	if (csid == 0x038e and option == 0) then
         if (player:delGil(price)) then
-            updateChocoboPrice(player, price);
-
-            local duration = 1800 + (player:getMod(MOD_CHOCOBO_RIDING_TIME) * 60)
-
-            player:addStatusEffectEx(EFFECT_CHOCOBO,EFFECT_CHOCOBO,1,0,duration,true);
+            if (level >= 20) then
+                player:addStatusEffectEx(EFFECT_CHOCOBO,EFFECT_CHOCOBO,1,0,1800,true);
+            else
+                player:addStatusEffectEx(EFFECT_CHOCOBO,EFFECT_CHOCOBO,1,0,900,true);
+            end
         end
-    end
+	end
+
 end;

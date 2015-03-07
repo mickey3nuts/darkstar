@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -240,12 +240,6 @@ uint8 CAttack::GetHitRate()
 		{
 			m_hitRate = battleutils::GetHitRate(m_attacker, m_victim, 0);
 		}
-
-        // Deciding this here because SA/TA wears on attack, before the 2nd+ hits go off.
-        if (m_hitRate == 100)
-        {
-            m_attackRound->SetSATA(true);
-        }
 	}
 	// Left hand hitrate
 	else if (m_attackDirection == LEFTATTACK && m_attackType != KICK_ATTACK)
@@ -257,6 +251,12 @@ uint8 CAttack::GetHitRate()
 		else
 		{
 			m_hitRate = battleutils::GetHitRate(m_attacker, m_victim, 1);
+		}
+
+		// Deciding this here because SA/TA wears on attack, before the 2nd+ hits go off.
+		if (m_hitRate = 100)
+		{
+			m_attackRound->SetSATA(true);
 		}
 	}
 	// Kick hit rate
@@ -359,6 +359,12 @@ void CAttack::ProcessDamage()
 	if (m_isCritical)
 	{	
 		m_damage += (m_damage * (float)m_attacker->getMod(MOD_CRIT_DMG_INCREASE) / 100);
+	}
+
+	// Try Null damage chance (The target)
+    if (m_victim->objtype == TYPE_PC && WELL512::irand() % 100 < m_victim->getMod(MOD_NULL_PHYSICAL_DAMAGE))
+	{
+		m_damage = 0;
 	}
 
 	// Try skill up.

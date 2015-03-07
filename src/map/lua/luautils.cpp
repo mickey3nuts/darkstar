@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@
 #include "../packets/char_update.h"
 #include "../packets/entity_update.h"
 #include "../packets/char.h"
+#include "../packets/chat_message.h"
 #include "../packets/menu_raisetractor.h"
 #include "../packets/message_basic.h"
 #include "../packets/entity_visual.h"
@@ -130,6 +131,8 @@ int32 init()
 
 	lua_register(LuaHandle,"getCorsairRollEffect",luautils::getCorsairRollEffect);
     lua_register(LuaHandle,"getSpell",luautils::getSpell);
+
+	lua_register(LuaHandle,"isValidLS",luautils::isValidLS);
 
     Lunar<CLuaAbility>::Register(LuaHandle);
 	Lunar<CLuaBaseEntity>::Register(LuaHandle);
@@ -761,7 +764,7 @@ int32 SpawnMob(lua_State* L)
 			CLuaInstance* PLuaInstance = Lunar<CLuaInstance>::check(L, 2);
 			PMob = (CMobEntity*)PLuaInstance->GetInstance()->GetEntity(mobid & 0xFFF, TYPE_MOB);
 		}
-        else if (((mobid >> 12) & 0x0FFF) < MAX_ZONEID)
+		else
 		{
 			PMob = (CMobEntity*)zoneutils::GetEntity(mobid, TYPE_MOB);
 		}
@@ -943,6 +946,29 @@ int32 GetMobAction(lua_State* L)
     lua_pushnil(L);
     return 1;
 }
+
+/************************************************************************
+*                                                                       *
+* Check if a given linkshell exists by checking the name in database    *
+*                                                                       *
+************************************************************************/
+
+	int32 isValidLS(lua_State* L)
+	{
+	const int8* linkshellName = lua_tostring(L, 1);
+	const int8* Query = "SELECT name FROM linkshells WHERE name='%s'";
+	int32 ret = Sql_Query(SqlHandle, Query, linkshellName);
+
+	if (ret != SQL_ERROR && Sql_NumRows(SqlHandle) != 0 && Sql_NextRow(SqlHandle) == SQL_SUCCESS)
+	{
+		lua_pushboolean(L, true);
+	}
+		else
+	{
+		lua_pushboolean(L, false);
+	}
+		return 1;
+	}
 
 /************************************************************************
 *                                                                       *
@@ -2075,7 +2101,7 @@ int32 OnMagicHit(CBattleEntity* PCaster, CBattleEntity* PTarget, CSpell* PSpell)
 {
     DSP_DEBUG_BREAK_IF(PSpell == NULL);
 
-    lua_prepscript("scripts/zones/%s/mobs/%s.lua", PTarget->loc.zone->GetName(), PTarget->GetName());
+    lua_prepscript("scripts/zones/%s/mobs/%s.lua", PCaster->loc.zone->GetName(), PCaster->GetName());
 
     if (prepFile(File, "onMagicHit"))
     {
@@ -2391,13 +2417,13 @@ int32 OnMobDeath(CBaseEntity* PMob, CBaseEntity* PKiller)
 
         PChar->ForAlliance([PChar, PMob, PKiller, &File](CBattleEntity* PMember)
         {
+            if (prepFile(File, "onMobDeathEx"))
+            {
+                return;
+            }
+
             if (PMember->getZone() == PChar->getZone())
             {
-                if (prepFile(File, "onMobDeathEx"))
-                {
-                    return;
-                }
-
                 CLuaBaseEntity LuaMobEntity(PMob);
                 CLuaBaseEntity LuaKillerEntity(PMember);
 

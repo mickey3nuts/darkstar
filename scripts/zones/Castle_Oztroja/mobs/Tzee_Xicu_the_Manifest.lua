@@ -10,14 +10,20 @@ require("scripts/zones/Castle_Oztroja/TextIDs");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
+	mob:addMod(MOD_MATT,75);
+	mob:addMod(MOD_MACC,500);
+	mob:addMod(MOD_ACC,250);
+	mob:addMod(MOD_REGAIN,33);	
+	mob:addMod(MOD_ATT,50);
+	mob:addMod(MOD_DEF,50);
 end;
 
 -----------------------------------
 -- onMobEngaged
 -----------------------------------
 
-function onMobEngaged(mob,target)
+function OnMobEngaged(mob,target)
 -- target:showText(mob,YAGUDO_KING_ENGAGE);
 end;
 
@@ -29,7 +35,7 @@ function onMobDeath(mob, killer)
 
 		killer:addTitle(DEITY_DEBUNKER);
 -- killer:showText(mob,YAGUDO_KING_DEATH);
-
+    
     -- Set Tzee_Xicu_the_Manifest's Window Open Time
     wait = 72 * 3600
     SetServerVariable("[POP]Tzee_Xicu_the_Manifest", os.time(t) + wait); -- 3 days
@@ -40,5 +46,5 @@ function onMobDeath(mob, killer)
     DeterMob(Yagudo_Avatar, false);
     UpdateNMSpawnPoint(Yagudo_Avatar);
     GetMobByID(Yagudo_Avatar):setRespawnTime(math.random((75600),(86400)));
-
+    
 end;

@@ -1,7 +1,7 @@
 
 -----------------------------------
 -- mob : Fomor Summoner
--- zone : Sacrarium
+-- zone : Sacrarium 
 -----------------------------------
 
 
@@ -11,7 +11,7 @@
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

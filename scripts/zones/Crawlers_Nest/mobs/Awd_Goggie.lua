@@ -1,5 +1,5 @@
 -----------------------------------
--- Area:
+-- Area: 
 -- NPC:  Awd_Goggie
 -- Area: Crawler's Nest
 -- NPC:  Awd Goggie
@@ -12,7 +12,7 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

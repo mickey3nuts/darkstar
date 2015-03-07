@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,12 +47,6 @@ protected:
 
 
 private:
-    uint32 m_magicRecast;
-    uint32 m_magicEnfeebleRecast;
-    uint32 m_magicElementalRecast;
-    uint32 m_magicHealRecast;
-    uint32 m_magicEnhanceRecast;
-    uint32 m_magicStatusRecast;
     void ActionFall();
 };
 

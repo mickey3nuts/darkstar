@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -171,7 +171,7 @@ bool CSpell::canHitShadow()
 bool CSpell::dealsDamage()
 {
     //damage or drain hp
-    return m_message == 2 || m_message == 227 || m_message == 252 || m_message == 274;
+    return m_message==2 || m_message==227;
 }
 
 float CSpell::getRadius()
@@ -424,7 +424,7 @@ namespace spell
 
                 uint16 id = Sql_GetUIntData(SqlHandle,0);
 
-                if ((SPELLGROUP)Sql_GetIntData(SqlHandle, 3) == SPELLGROUP_BLUE)
+                if (id > 0x200)
                 {
                     PSpell = new CBlueSpell(id);
                 }
@@ -514,7 +514,7 @@ namespace spell
 			    uint16 modID  = (uint16)Sql_GetUIntData(SqlHandle,1);
 			    int16  value  = (int16) Sql_GetIntData (SqlHandle,2);
 
-			    if (!(spellId > MAX_SPELL_ID) && (PSpellList[spellId] != NULL))
+			    if (!(spellId > MAX_SPELL_ID) && (PSpellList[spellId] != NULL) && spellId > 0x200)
 			    {
                     ((CBlueSpell*)PSpellList[spellId])->addModifier(new CModifier(modID,value));
 			    }
@@ -615,7 +615,7 @@ namespace spell
                         usable = false;
                     }
                 }
-                else if (spell->getSpellGroup() == SPELLGROUP_BLUE)
+                else if (SpellID > 0x200)
                 {
                     if (PCaster->objtype == TYPE_PC)
                     {
@@ -659,7 +659,7 @@ namespace spell
 						usable = false;
 					}
 				}
-                else if (spell->getSpellGroup() == SPELLGROUP_BLUE)
+				else if (SpellID > 0x200)
 				{
 					if (PCaster->objtype == TYPE_PC)
 					{

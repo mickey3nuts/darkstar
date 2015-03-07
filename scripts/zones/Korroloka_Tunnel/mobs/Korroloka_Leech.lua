@@ -10,7 +10,7 @@ require("scripts/globals/settings");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 function onMobDeath(mob, killer)

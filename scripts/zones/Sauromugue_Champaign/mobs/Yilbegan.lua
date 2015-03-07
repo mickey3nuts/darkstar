@@ -1,5 +1,5 @@
 -----------------------------------
--- Area: Sauromugue Champaign
+-- Area: Sauromugue Champaign	
 -- NM:   Yilbegan
 -----------------------------------
 
@@ -9,7 +9,7 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

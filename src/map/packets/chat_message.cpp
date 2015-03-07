@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,4 +42,15 @@ CChatMessagePacket::CChatMessagePacket(CCharEntity* PChar, CHAT_MESSAGE_TYPE Mes
 
      memcpy(data + (0x08) - 4, PChar->GetName(), PChar->name.size());
      memcpy(data + (0x18) - 4, buff, buffSize);
+}
+
+CSpoofMessagePacket::CSpoofMessagePacket(CCharEntity* PChar, int8* name, CHAT_MESSAGE_TYPE MessageType, int8* buff)
+{
+    int32 buffSize = (strlen(buff) > 108) ? 108 : strlen(buff);
+    this->type = 0x17;
+    this->size = dsp_min((32 + (buffSize + 1) + ((4 - ((buffSize + 1) % 4)) % 4)) / 2, 128);
+    WBUFB(data, (0x04) - 4) = MessageType;
+    WBUFW(data, (0x06) - 4) = PChar->getZone();
+    memcpy(data + (0x08) - 4, name, size);
+    memcpy(data + (0x18) - 4, buff, buffSize);
 }

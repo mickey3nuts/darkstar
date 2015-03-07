@@ -7,7 +7,7 @@
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
@@ -15,11 +15,11 @@ end;
 -----------------------------------
 
 function onMobDeath(mob,killer)
-
+	
 	local mobPet = mob:getID() + 1;
-
+	
 	if(GetMobAction(mobPet) ~= 0) then
 		GetMobByID(mobPet):setHP(0);
 	end
-
+	
 end;

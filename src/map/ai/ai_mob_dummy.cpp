@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -438,7 +438,7 @@ void CAIMobDummy::ActionDropItems()
 			    }
 
 				//check for gil (beastmen drop gil, some NMs drop gil)
-				if(m_PMob->CanDropGil() || map_config.all_mobs_gil_bonus > 0)
+				if(m_PMob->CanDropGil() || (map_config.all_mobs_gil_bonus > 0 && PChar->loc.zone->GetRegionID() != REGION_DYNAMIS))
                 {
 					charutils::DistributeGil(PChar, m_PMob); // TODO: REALISATION MUST BE IN TREASUREPOOL
 				}
@@ -463,54 +463,52 @@ void CAIMobDummy::ActionDropItems()
 						PChar->PTreasurePool->AddItem(4095 + m_PMob->m_Element, m_PMob);
 					}
 
-                    if (WELL512::irand() % 100 < 20 && PChar->PTreasurePool->CanAddSeal())
-                    {
-                    //RULES: Only 1 kind may drop per mob
-                        if (m_PMob->GetMLevel() >= 75 && luautils::IsExpansionEnabled("ABYSSEA")) //all 4 types
-                        {
-                            switch (WELL512::irand() % 4)
-                            {
-                            case 0:
-                                PChar->PTreasurePool->AddItem(1126, m_PMob);
-                                break;
-                            case 1:
-                                PChar->PTreasurePool->AddItem(1127, m_PMob);
-                                break;
-                            case 2:
-                                PChar->PTreasurePool->AddItem(2955, m_PMob);
-                                break;
-                            case 3:
-                                PChar->PTreasurePool->AddItem(2956, m_PMob);
-                                break;
-                            }
-                        }
-                        else if (m_PMob->GetMLevel() >= 70 && luautils::IsExpansionEnabled("ABYSSEA")) //b.seal & k.seal & k.crest
-                        {
-                            switch (WELL512::irand() % 3)
-                            {
-                            case 0:
-                                PChar->PTreasurePool->AddItem(1126, m_PMob);
-                                break;
-                            case 1:
-                                PChar->PTreasurePool->AddItem(1127, m_PMob);
-                                break;
-                            case 2:
-                                PChar->PTreasurePool->AddItem(2955, m_PMob);
-                                break;
-                            }
-                        }
-                        else if (m_PMob->GetMLevel() >= 50) //b.seal & k.seal only
-                        {
-                            if (WELL512::irand() % 2 == 0)
-                                PChar->PTreasurePool->AddItem(1126, m_PMob);
-                            else
-                                PChar->PTreasurePool->AddItem(1127, m_PMob);
-                        }
-                        else //b.seal only
-                            PChar->PTreasurePool->AddItem(1126, m_PMob);
-                    }
-                }
-            }
+					if (WELL512::irand() % 100 < 20 && PChar->PTreasurePool->CanAddSeal())
+					{
+						//RULES: Only 1 kind may drop per mob
+						if(m_PMob->GetMLevel() < 50){ //b.seal only
+							PChar->PTreasurePool->AddItem(1126, m_PMob);
+						}
+						else if(m_PMob->GetMLevel() < 70){ //b.seal & k.seal only
+							if(WELL512::irand()%2 == 0){
+								PChar->PTreasurePool->AddItem(1126, m_PMob);
+							}
+							else{
+								PChar->PTreasurePool->AddItem(1127, m_PMob);
+							}
+						}
+						else if(m_PMob->GetMLevel() < 75){ //b.seal & k.seal & k.crest
+							switch(WELL512::irand()%3){
+							case 0:
+								PChar->PTreasurePool->AddItem(1126, m_PMob);
+								break;
+							case 1:
+								PChar->PTreasurePool->AddItem(1127, m_PMob);
+								break;
+							case 2:
+								PChar->PTreasurePool->AddItem(2955, m_PMob);
+								break;
+							}
+						}
+						else if(m_PMob->GetMLevel() >= 75){ //all 4
+							switch(WELL512::irand()%4){
+							case 0:
+								PChar->PTreasurePool->AddItem(1126, m_PMob);
+								break;
+							case 1:
+								PChar->PTreasurePool->AddItem(1127, m_PMob);
+								break;
+							case 2:
+								PChar->PTreasurePool->AddItem(2955, m_PMob);
+								break;
+							case 3:
+								PChar->PTreasurePool->AddItem(2956, m_PMob);
+								break;
+							}
+						}
+					}
+				}
+			}
 
 			PChar->setWeaponSkillKill(false);
 			m_PMob->StatusEffectContainer->KillAllStatusEffect();
@@ -610,7 +608,7 @@ void CAIMobDummy::ActionSpawn()
 		m_PMob->m_THLvl = 0;
 		m_PMob->m_ItemStolen = false;
         m_PMob->m_DropItemTime = 1000;
-		m_PMob->status = m_PMob->allegiance == ALLEGIANCE_MOB ? STATUS_MOB : STATUS_NORMAL;
+		m_PMob->status = m_PMob->allegiance == ALLEGIANCE_MOB ? STATUS_UPDATE : STATUS_NORMAL;
 		m_PMob->animation = ANIMATION_NONE;
 		m_PMob->HideName(false);
         m_PMob->ResetLocalVars();
@@ -924,6 +922,10 @@ void CAIMobDummy::ActionAbilityUsing()
     if (!(m_PMob->m_Behaviour & BEHAVIOUR_NO_TURN))
 	    m_PPathFind->LookAt(m_PBattleSubTarget->loc.p);
 
+	//TODO: Any checks whilst the monster is preparing.
+	//NOTE: RANGE CHECKS ETC ONLY ARE DONE AFTER THE ABILITY HAS FINISHED PREPARING.
+	//      THE ONLY CHECK IN HERE SHOULD BE WITH STUN/SLEEP/TERROR/ETC
+
 	if (m_Tick >= m_LastActionTime + m_PMobSkill->getActivationTime())
     {
 		//Range check
@@ -1044,17 +1046,10 @@ void CAIMobDummy::ActionAbilityFinish()
                     SUBEFFECT effect = battleutils::GetSkillChainEffect(m_PBattleSubTarget, PWeaponSkill);
                     if (effect != SUBEFFECT_NONE)
                     {
-                        int32 skillChainDamage = battleutils::TakeSkillchainDamage(m_PMob, PTarget, Action.param);
-                        if (skillChainDamage < 0)
-                        {
-                            Action.addEffectParam = -skillChainDamage;
-                            Action.addEffectMessage = 384 + effect;
-                        }
-                        else
-                        {
-                            Action.addEffectParam = skillChainDamage;
-                            Action.addEffectMessage = 287 + effect;
-                        }
+                        uint16 skillChainDamage = battleutils::TakeSkillchainDamage(m_PMob, PTarget, Action.param);
+
+                        Action.addEffectParam = skillChainDamage;
+                        Action.addEffectMessage = 287 + effect;
                         Action.additionalEffect = effect;
                     }
                 }
@@ -1116,7 +1111,7 @@ void CAIMobDummy::ActionAbilityInterrupt()
 	m_PMob->loc.zone->PushPacket(m_PMob, CHAR_INRANGE, new CActionPacket(m_PMob));
 
     m_PMobSkill = NULL;
-    m_ActionType = (m_PMob->StatusEffectContainer->HasPreventActionEffect() ? ACTION_SLEEP : ACTION_ATTACK);
+    m_ActionType = ACTION_ATTACK;
 }
 
 /************************************************************************
@@ -1584,7 +1579,7 @@ void CAIMobDummy::ActionAttack()
 						break;
 					}
 
-					int32 damage = 0;
+					uint32 damage = 0;
 					bool isCountered = false;
 					bool isParried = false;
 					bool isGuarded = false;
@@ -1620,32 +1615,19 @@ void CAIMobDummy::ActionAttack()
                             if (thirdEyeCounter && isFaceing(m_PBattleTarget->loc.p, m_PMob->loc.p, 40)) //assuming that 3rd eye counter requires facing the mob, but not subjected to accuracy checks
                             {
                                 isCountered = true;
-                                Action.reaction = REACTION_EVADE;
+                                isCritical = (WELL512::irand() % 100 < battleutils::GetCritHitRate(m_PBattleTarget, m_PMob, false));
+                                float DamageRatio = battleutils::GetDamageRatio(m_PBattleTarget, m_PMob, isCritical, 0);
+                                damage = (uint32)((m_PBattleTarget->GetMainWeaponDmg() + battleutils::GetFSTR(m_PBattleTarget, m_PMob, SLOT_MAIN)) * DamageRatio);
+                                Action.messageID = 33;
+                                Action.reaction = REACTION_HIT;
                                 Action.speceffect = SPECEFFECT_NONE;
-                                Action.param = 0;
-                                Action.messageID = 0;
+                                Action.param = battleutils::TakePhysicalDamage(m_PBattleTarget, m_PMob, damage, false, SLOT_MAIN, 1, NULL, true);
+                                Action.spikesParam = Action.param;
                                 Action.spikesEffect = SUBEFFECT_COUNTER;
-                                if (battleutils::IsAbsorbByShadow(m_PMob))
+                                if (m_PBattleTarget->objtype == TYPE_PC)
                                 {
-                                    Action.spikesParam = 0;
-                                    Action.spikesMessage = 14;
-                                }
-                                else
-                                {
-                                    int16 naturalh2hDMG = 0;
-                                    if (m_PBattleTarget->m_Weapons[SLOT_MAIN]->getDmgType() == DAMAGE_HTH || (m_PBattleTarget->objtype == TYPE_MOB && m_PBattleTarget->GetMJob() == JOB_MNK))
-                                        naturalh2hDMG = (float)(m_PBattleTarget->GetSkill(SKILL_H2H) * 0.11f) + 3;
-                                    
-                                    isCritical = (WELL512::irand() % 100 < battleutils::GetCritHitRate(m_PBattleTarget, m_PMob, false));
-                                    float DamageRatio = battleutils::GetDamageRatio(m_PBattleTarget, m_PMob, isCritical, 0);
-                                    damage = (int32)((m_PBattleTarget->GetMainWeaponDmg() + naturalh2hDMG + battleutils::GetFSTR(m_PBattleTarget, m_PMob, SLOT_MAIN)) * DamageRatio);
-                                    Action.spikesParam = battleutils::TakePhysicalDamage(m_PBattleTarget, m_PMob, damage, false, SLOT_MAIN, 1, NULL, true, false, true);
-                                    Action.spikesMessage = 33;
-                                    if (m_PBattleTarget->objtype == TYPE_PC)
-                                    {
-                                        uint8 skilltype = (m_PBattleTarget->m_Weapons[SLOT_MAIN] == NULL ? SKILL_H2H : m_PBattleTarget->m_Weapons[SLOT_MAIN]->getSkillType());
-                                        charutils::TrySkillUP((CCharEntity*)m_PBattleTarget, (SKILLTYPE)skilltype, m_PMob->GetMLevel());
-                                    }
+                                    uint8 skilltype = (m_PBattleTarget->m_Weapons[SLOT_MAIN] == NULL ? SKILL_H2H : m_PBattleTarget->m_Weapons[SLOT_MAIN]->getSkillType());
+                                    charutils::TrySkillUP((CCharEntity*)m_PBattleTarget, (SKILLTYPE)skilltype, m_PMob->GetMLevel());
                                 }
                             }
                             else
@@ -1717,7 +1699,7 @@ void CAIMobDummy::ActionAttack()
                                         DamageRatio = 0;
 								}
 
-								damage = (int32)((m_PMob->GetMainWeaponDmg() + battleutils::GetFSTR(m_PMob, m_PBattleTarget,SLOT_MAIN)) * DamageRatio);
+								damage = (uint32)((m_PMob->GetMainWeaponDmg() + battleutils::GetFSTR(m_PMob, m_PBattleTarget,SLOT_MAIN)) * DamageRatio);
 
 								//  Guard skill up
                                 if (m_PBattleTarget->objtype == TYPE_PC && (isGuarded || ((map_config.newstyle_skillups & NEWSTYLE_GUARD) > 0)))
@@ -1733,13 +1715,28 @@ void CAIMobDummy::ActionAttack()
 							{
 								bool isBlocked = attackutils::IsBlocked(m_PMob, m_PBattleTarget);
 								if(isBlocked){ Action.reaction = REACTION_BLOCK; }
+								
 
-                                Action.param = battleutils::TakePhysicalDamage(m_PMob, m_PBattleTarget, damage, isBlocked, SLOT_MAIN, 1, NULL, true, true);
-                                if (Action.param < 0)
-                                {
-                                    Action.param = -(Action.param);
+								// Try Null damage chance (The target)
+								if (WELL512::irand()%100 < m_PBattleTarget->getMod(MOD_NULL_PHYSICAL_DAMAGE) && m_PBattleTarget->objtype == TYPE_PC)
+								{
+									damage = 0;
+								}
+
+								// Try absorb HP chance (The target)
+								if (attackutils::TryAbsorbHPfromPhysicalAttack(m_PBattleTarget, damage))
+								{
                                     Action.messageID = 373;
+                                    Action.param = battleutils::TakePhysicalDamage(m_PMob, m_PBattleTarget, -damage, isBlocked, SLOT_MAIN, 1, NULL, true);
                                 }
+                                else
+                                {
+                                    // Try to absorb MP (The target)
+                                    attackutils::TryAbsorbMPfromPhysicalAttack(m_PBattleTarget, damage);
+
+                                    Action.param = battleutils::TakePhysicalDamage(m_PMob, m_PBattleTarget, damage, isBlocked, SLOT_MAIN, 1, NULL, true);
+                                }
+								m_PMob->PEnmityContainer->UpdateEnmityFromAttack(m_PBattleTarget, Action.param);
 
 								// Block skill up
 								if(m_PBattleTarget->objtype == TYPE_PC && isBlocked || ((map_config.newstyle_skillups & NEWSTYLE_BLOCK) > 0))
@@ -1758,34 +1755,23 @@ void CAIMobDummy::ActionAttack()
 							}
 							else //Countered
 							{
-                                Action.reaction = REACTION_EVADE;
+                                int16 naturalh2hDMG = 0;
+                                if (m_PBattleTarget->m_Weapons[SLOT_MAIN]->getDmgType() == DAMAGE_HTH || (m_PBattleTarget->objtype == TYPE_MOB && m_PBattleTarget->GetMJob() == JOB_MNK))
+                                    naturalh2hDMG = (float)(m_PBattleTarget->GetSkill(SKILL_H2H) * 0.11f) + 3;
+
+                                float DamageRatio = battleutils::GetDamageRatio(m_PBattleTarget, m_PMob, isCritical, 0);
+                                damage = (uint32)((m_PBattleTarget->GetMainWeaponDmg() + naturalh2hDMG + battleutils::GetFSTR(m_PBattleTarget, m_PMob, SLOT_MAIN)) * DamageRatio);
+                                Action.messageID = 33;
+                                Action.reaction = REACTION_HIT;
                                 Action.speceffect = SPECEFFECT_NONE;
-                                Action.param = 0;
-                                Action.messageID = 0;
+                                Action.param = battleutils::TakePhysicalDamage(m_PBattleTarget, m_PMob, damage, false, SLOT_MAIN, 1, NULL, true);
+                                Action.spikesParam = Action.param;
                                 Action.spikesEffect = SUBEFFECT_COUNTER;
-                                if (battleutils::IsAbsorbByShadow(m_PMob))
-                                {
-                                    Action.spikesParam = 0;
-                                    Action.spikesMessage = 14;
-                                }
-                                else
-                                {
-                                    int16 naturalh2hDMG = 0;
-                                    if (m_PBattleTarget->m_Weapons[SLOT_MAIN]->getDmgType() == DAMAGE_HTH || (m_PBattleTarget->objtype == TYPE_MOB && m_PBattleTarget->GetMJob() == JOB_MNK))
-                                        naturalh2hDMG = (float)(m_PBattleTarget->GetSkill(SKILL_H2H) * 0.11f) + 3;
-                                    
-                                    isCritical = (WELL512::irand() % 100 < battleutils::GetCritHitRate(m_PBattleTarget, m_PMob, false));
-                                    float DamageRatio = battleutils::GetDamageRatio(m_PBattleTarget, m_PMob, isCritical, 0);
-                                    damage = (int32)((m_PBattleTarget->GetMainWeaponDmg() + naturalh2hDMG + battleutils::GetFSTR(m_PBattleTarget, m_PMob, SLOT_MAIN)) * DamageRatio);
-                                    Action.spikesParam = battleutils::TakePhysicalDamage(m_PBattleTarget, m_PMob, damage, false, SLOT_MAIN, 1, NULL, true, false, true);
-                                    Action.spikesMessage = 33;
-                                    
-                                    if (m_PBattleTarget->objtype == TYPE_PC)
-                                    {
-                                        uint8 skilltype = (m_PBattleTarget->m_Weapons[SLOT_MAIN] == NULL ? SKILL_H2H : m_PBattleTarget->m_Weapons[SLOT_MAIN]->getSkillType());
-                                        charutils::TrySkillUP((CCharEntity*)m_PBattleTarget, (SKILLTYPE)skilltype, m_PMob->GetMLevel());
-                                    }
-                                }
+								if(m_PBattleTarget->objtype == TYPE_PC)
+								{
+									uint8 skilltype = (m_PBattleTarget->m_Weapons[SLOT_MAIN] == NULL ? SKILL_H2H : m_PBattleTarget->m_Weapons[SLOT_MAIN]->getSkillType());
+									charutils::TrySkillUP((CCharEntity*)m_PBattleTarget, (SKILLTYPE)skilltype, m_PMob->GetMLevel());
+								}
 							}
 
 						}

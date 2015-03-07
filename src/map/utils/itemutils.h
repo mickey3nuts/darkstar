@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 #include "../items/item_weapon.h"
 
 #define MAX_ITEMID  32768
-#define MAX_DROPID  5000
+#define MAX_DROPID  9999
 #define MAX_LOOTID  1300
 
 struct DropItem_t

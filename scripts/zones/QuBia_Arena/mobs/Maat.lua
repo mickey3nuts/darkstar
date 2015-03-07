@@ -12,14 +12,14 @@ require("scripts/zones/QuBia_Arena/TextIDs");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobEngaged Action
 -----------------------------------
 
-function onMobEngaged(mob,target)
+function OnMobEngaged(mob,target)
 	target:showText(mob,YOU_DECIDED_TO_SHOW_UP);
 	printf("Maat Qubia Arena works");
 	-- When he take damage: target:showText(mob,THAT_LL_HURT_IN_THE_MORNING);

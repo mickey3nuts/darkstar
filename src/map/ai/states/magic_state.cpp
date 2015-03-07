@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ uint32 CMagicState::CalculateCastTime(CSpell* PSpell)
         if (m_PEntity->StatusEffectContainer->HasStatusEffect(EFFECT_NIGHTINGALE))
         {
             if (m_PEntity->objtype == TYPE_PC &&
-                WELL512::irand() % 100 < ((CCharEntity*)m_PEntity)->PMeritPoints->GetMeritValue(MERIT_NIGHTINGALE, (CCharEntity*)m_PEntity) - 25)
+                WELL512::irand() % 100 < ((CCharEntity*)m_PEntity)->PMeritPoints->GetMeritValue(MERIT_TROUBADOUR, (CCharEntity*)m_PEntity) - 25)
             {
                 return 0;
             }
@@ -640,6 +640,10 @@ void CMagicState::FinishSpell()
         }
         else
         {
+            if (PTarget->objtype == TYPE_MOB)
+            {
+                luautils::OnMagicHit(PTarget, m_PEntity, m_PSpell);
+            }
 			action.param = luautils::OnSpellCast(m_PEntity, PTarget, m_PSpell);
 
             // remove effects from damage
@@ -660,11 +664,6 @@ void CMagicState::FinishSpell()
         }
 
         action.messageID = msg;
-
-        if (PTarget->objtype == TYPE_MOB && msg != 31) // If message isn't the shadow loss message, because I had to move this outside of the above check for it.
-        {
-            luautils::OnMagicHit(m_PEntity, PTarget, m_PSpell);
-        }
 
 		if (m_PSpell->getID() != 305) //I hate to do this, but there really is no other spell like Odin
             CharOnTarget(&action, ce, ve);

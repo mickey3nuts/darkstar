@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -764,7 +764,7 @@ void CAIPetDummy::ActionAttack()
 					Action.messageID  = 15;
                     Action.knockback  = 0;
 					//ShowDebug("pet hp %i and atk %i def %i eva is %i \n",m_PPet->health.hp,m_PPet->ATT(),m_PPet->DEF(),m_PPet->getMod(MOD_EVA));
-					int32 damage = 0;
+					uint16 damage = 0;
 
 					if (m_PBattleTarget->StatusEffectContainer->HasStatusEffect(EFFECT_PERFECT_DODGE))
 					{
@@ -795,7 +795,7 @@ void CAIPetDummy::ActionAttack()
 								Action.messageID  = 67;
 							}
 
-							damage = (int32)((m_PPet->GetMainWeaponDmg() + battleutils::GetFSTR(m_PPet, m_PBattleTarget,SLOT_MAIN)) * DamageRatio);
+							damage = (uint16)((m_PPet->GetMainWeaponDmg() + battleutils::GetFSTR(m_PPet, m_PBattleTarget,SLOT_MAIN)) * DamageRatio);
 						}
 					} else {
                         // create enmity even on misses
@@ -812,14 +812,25 @@ void CAIPetDummy::ActionAttack()
                     bool isBlocked = (WELL512::irand() % 100 < battleutils::GetBlockRate(m_PPet, m_PBattleTarget));
 					if(isBlocked){ Action.reaction = REACTION_BLOCK; }
 
+					// Try Null damage chance (The target)
+                    if (m_PBattleTarget->objtype == TYPE_PC && WELL512::irand() % 100 < m_PBattleTarget->getMod(MOD_NULL_PHYSICAL_DAMAGE))
+					{
+						damage = 0;
+					}
 
-					Action.param = battleutils::TakePhysicalDamage(m_PPet, m_PBattleTarget, damage, isBlocked, SLOT_MAIN, 1, NULL, true, true);
-                    if (Action.param < 0)
-                    {
-                        Action.param = -(Action.param);
+					// Try absorb HP chance (The target)
+					if (attackutils::TryAbsorbHPfromPhysicalAttack(m_PBattleTarget, damage))
+					{
                         Action.messageID = 373;
+                        Action.param = battleutils::TakePhysicalDamage(m_PPet, m_PBattleTarget, damage, isBlocked, SLOT_MAIN, 1, NULL, true);
                     }
+                    else
+                    {
+                        // Try to absorb MP (The target)
+                        attackutils::TryAbsorbMPfromPhysicalAttack(m_PBattleTarget, damage);
 
+                        Action.param = battleutils::TakePhysicalDamage(m_PPet, m_PBattleTarget, damage, isBlocked, SLOT_MAIN, 1, NULL, true);
+                    }
 	                // spike effect
 					if (Action.reaction != REACTION_EVADE && Action.reaction != REACTION_PARRY)
 					{

@@ -8,7 +8,7 @@
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
@@ -16,10 +16,10 @@ end;
 -----------------------------------
 
 function onMobDeath(mob, killer)
-
+	
 	if(killer:getVar("EquipedforAllOccasions") == 1) then
 		killer:setVar("EquipedforAllOccasions",2);
 	end
 end;
-
+	
 

@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -770,6 +770,7 @@ int32 map_cleanup(uint32 tick, CTaskMgr::CTask* PTask)
                 PChar->updatemask |= UPDATE_HP;
                 if (PChar->status == STATUS_NORMAL)
                 {
+                    PChar->status = STATUS_UPDATE;
                     PChar->loc.zone->SpawnPCs(PChar);
                 }
             }
@@ -840,6 +841,7 @@ int32 map_cleanup(uint32 tick, CTaskMgr::CTask* PTask)
 
             if (PChar->status == STATUS_NORMAL)
             {
+                PChar->status = STATUS_UPDATE;
                 PChar->loc.zone->SpawnPCs(PChar);
             }
             charutils::SaveCharStats(PChar);
@@ -905,6 +907,8 @@ int32 map_config_default()
     map_config.exp_loss_level = 4;
     map_config.level_sync_enable = 0;
     map_config.all_jobs_widescan = 1;
+    map_config.widescan_bonus = 0;
+    map_config.engage_delay_mod = 1.0f;
     map_config.speed_mod = 0;
     map_config.mob_speed_mod = 0;
     map_config.skillup_chance_multiplier = 2.5f;
@@ -1110,6 +1114,14 @@ int32 map_config_read(const int8* cfgName)
         else if (strcmp(w1,"all_jobs_widescan") == 0)
         {
             map_config.all_jobs_widescan = atoi(w2);
+        }
+        else if (strcmp(w1,"widescan_bonus") == 0)
+        {
+            map_config.widescan_bonus = atoi(w2);
+        }
+        else if (strcmp(w1,"engage_delay_mod") == 0)
+        {
+            map_config.engage_delay_mod = atoi(w2);
         }
         else if (strcmp(w1,"speed_mod") == 0)
         {

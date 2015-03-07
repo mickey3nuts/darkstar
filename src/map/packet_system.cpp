@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-Copyright (c) 2010-2015 Darkstar Dev Teams
+Copyright (c) 2010-2014 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -79,7 +79,6 @@ This file is part of DarkStar-server source code.
 #include "packets/char_jobs.h"
 #include "packets/char_job_extra.h"
 #include "packets/char_health.h"
-#include "packets/char_recast.h"
 #include "packets/char_skills.h"
 #include "packets/char_spells.h"
 #include "packets/char_stats.h"
@@ -430,6 +429,7 @@ void SmallPacket0x00D(map_session_data_t* session, CCharEntity* PChar, int8* dat
     }
 
     charutils::SaveCharStats(PChar);
+    charutils::SaveCharPosition(PChar);
     charutils::SaveCharExp(PChar, PChar->GetMJob());
     charutils::SaveCharPoints(PChar);
 
@@ -503,7 +503,7 @@ void SmallPacket0x015(map_session_data_t* session, CCharEntity* PChar, int8* dat
             (PChar->loc.p.z != RBUFF(data, (0x0C))) ||
             (PChar->m_TargID != RBUFW(data, (0x16))));
 
-        bool isUpdate = moved || PChar->updatemask & UPDATE_POS;
+        bool isUpdate = moved || PChar->status == STATUS_UPDATE;
 
         if (!PChar->isCharmed)
         {
@@ -524,6 +524,7 @@ void SmallPacket0x015(map_session_data_t* session, CCharEntity* PChar, int8* dat
 
         if (isUpdate)
         {
+            PChar->status = STATUS_NORMAL;
             PChar->loc.zone->SpawnPCs(PChar);
             PChar->loc.zone->SpawnNPCs(PChar);
         }
@@ -723,7 +724,7 @@ void SmallPacket0x01A(map_session_data_t* session, CCharEntity* PChar, int8* dat
         PChar->updatemask |= UPDATE_HP;
 
         PChar->clearPacketList();
-        charutils::SendToZone(PChar, 2, zoneutils::GetZoneIPP(PChar->loc.destination));
+        PChar->pushPacket(new CServerIPPacket(PChar, 2, zoneutils::GetZoneIPP(PChar->loc.destination)));
     }
     break;
     case 0x0C: // assist
@@ -776,6 +777,7 @@ void SmallPacket0x01A(map_session_data_t* session, CCharEntity* PChar, int8* dat
     break;
     case 0x12: // dismount
     {
+        PChar->status = STATUS_UPDATE;
         PChar->animation = ANIMATION_NONE;
         PChar->updatemask |= UPDATE_HP;
         PChar->StatusEffectContainer->DelStatusEffectSilent(EFFECT_CHOCOBO);
@@ -794,7 +796,7 @@ void SmallPacket0x01A(map_session_data_t* session, CCharEntity* PChar, int8* dat
             PChar->status = STATUS_DISAPPEAR;
             PChar->loc.boundary = 0;
             PChar->clearPacketList();
-            charutils::SendToZone(PChar, 2, zoneutils::GetZoneIPP(PChar->loc.destination));
+            PChar->pushPacket(new CServerIPPacket(PChar, 2, zoneutils::GetZoneIPP(PChar->loc.destination)));
         }
 
         PChar->m_hasTractor = 0;
@@ -2309,7 +2311,8 @@ void SmallPacket0x04E(map_session_data_t* session, CCharEntity* PChar, int8* dat
 
 void SmallPacket0x050(map_session_data_t* session, CCharEntity* PChar, int8* data)
 {
-    if (PChar->status != STATUS_NORMAL)
+    if (PChar->status != STATUS_NORMAL &&
+        PChar->status != STATUS_UPDATE)
         return;
 
     uint8 slotID = RBUFB(data, (0x04));        // inventory slot
@@ -2335,7 +2338,8 @@ void SmallPacket0x050(map_session_data_t* session, CCharEntity* PChar, int8* dat
 
 void SmallPacket0x051(map_session_data_t* session, CCharEntity* PChar, int8* data)
 {
-    if (PChar->status != STATUS_NORMAL)
+    if (PChar->status != STATUS_NORMAL &&
+        PChar->status != STATUS_UPDATE)
         return;
 
     for (uint8 i = 0; i < RBUFB(data, (0x04)); i++)
@@ -2534,7 +2538,7 @@ void SmallPacket0x05E(map_session_data_t* session, CCharEntity* PChar, int8* dat
     uint8  town = RBUFB(data, (0x16));
     uint8  zone = RBUFB(data, (0x17));
 
-    if (PChar->status == STATUS_NORMAL)
+    if (PChar->status == STATUS_NORMAL || PChar->status == STATUS_UPDATE)
     {
         PChar->status = STATUS_DISAPPEAR;
         PChar->loc.boundary = 0;
@@ -2580,7 +2584,7 @@ void SmallPacket0x05E(map_session_data_t* session, CCharEntity* PChar, int8* dat
                 PChar->pushPacket(new CMessageSystemPacket(0, 0, 2));
                 PChar->pushPacket(new CCSPositionPacket(PChar));
 
-                PChar->status = STATUS_NORMAL;
+                PChar->status = STATUS_UPDATE;
                 return;
             }
             else
@@ -2596,7 +2600,7 @@ void SmallPacket0x05E(map_session_data_t* session, CCharEntity* PChar, int8* dat
                     PChar->pushPacket(new CMessageSystemPacket(0, 0, 2));
                     PChar->pushPacket(new CCSPositionPacket(PChar));
 
-                    PChar->status = STATUS_NORMAL;
+                    PChar->status = STATUS_UPDATE;
                     return;
                 }
                 else
@@ -2612,7 +2616,7 @@ void SmallPacket0x05E(map_session_data_t* session, CCharEntity* PChar, int8* dat
 
     uint64 ipp = zoneutils::GetZoneIPP(PChar->loc.destination == 0 ? PChar->getZone() : PChar->loc.destination);
 
-    charutils::SendToZone(PChar, 2, ipp);
+    PChar->pushPacket(new CServerIPPacket(PChar, 2, ipp));
     return;
 }
 
@@ -2649,7 +2653,6 @@ void SmallPacket0x061(map_session_data_t* session, CCharEntity* PChar, int8* dat
     PChar->pushPacket(new CCharHealthPacket(PChar));
     PChar->pushPacket(new CCharStatsPacket(PChar));
     PChar->pushPacket(new CCharSkillsPacket(PChar));
-    PChar->pushPacket(new CCharRecastPacket(PChar));
     PChar->pushPacket(new CMenuMeritPacket(PChar));
     PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
     PChar->pushPacket(new CCharJobExtraPacket(PChar, false));
@@ -3726,7 +3729,6 @@ void SmallPacket0x0BE(map_session_data_t* session, CCharEntity* PChar, int8* dat
                 PChar->pushPacket(new CCharHealthPacket(PChar));
                 PChar->pushPacket(new CCharStatsPacket(PChar));
                 PChar->pushPacket(new CCharSkillsPacket(PChar));
-                PChar->pushPacket(new CCharRecastPacket(PChar));
                 PChar->pushPacket(new CCharAbilitiesPacket(PChar));
                 PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
                 PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
@@ -3892,6 +3894,8 @@ void SmallPacket0x0C4(map_session_data_t* session, CCharEntity* PChar, int8* dat
             charutils::SaveCharStats(PChar);
             charutils::SaveCharEquip(PChar);
 
+            if (PChar->status == STATUS_NORMAL) PChar->status = STATUS_UPDATE;
+
             PChar->pushPacket(new CLinkshellEquipPacket(PChar, lsNum));
             PChar->pushPacket(new CInventoryItemPacket(PItemLinkshell, LOC_INVENTORY, SlotID));
         }
@@ -3990,6 +3994,7 @@ void SmallPacket0x0DC(map_session_data_t* session, CCharEntity* PChar, int8* dat
     charutils::SaveCharStats(PChar);
 
     PChar->updatemask |= UPDATE_HP;
+    PChar->status = STATUS_UPDATE;
     PChar->pushPacket(new CMenuConfigPacket(PChar));
     PChar->pushPacket(new CCharUpdatePacket(PChar));
     return;
@@ -4339,12 +4344,14 @@ void SmallPacket0x0E7(map_session_data_t* session, CCharEntity* PChar, int8* dat
         {
             PChar->StatusEffectContainer->AddStatusEffect(new CStatusEffect(EFFECT_HEALING, 0, 0, 10, 0));
         }
+        PChar->status = STATUS_UPDATE;
         PChar->StatusEffectContainer->AddStatusEffect(new CStatusEffect(EFFECT_LEAVEGAME, 0, ExitType, 5, 0));
     }
     else if (PChar->animation == ANIMATION_HEALING)
     {
         if (PChar->StatusEffectContainer->HasStatusEffect(EFFECT_LEAVEGAME))
         {
+            PChar->status = STATUS_UPDATE;
             PChar->StatusEffectContainer->DelStatusEffect(EFFECT_HEALING);
         }
         else {
@@ -4391,6 +4398,7 @@ void SmallPacket0x0E8(map_session_data_t* session, CCharEntity* PChar, int8* dat
             {
                 PChar->PPet->PBattleAI->SetCurrentAction(ACTION_ROAMING);
             }
+            PChar->status = STATUS_UPDATE;
             PChar->PBattleAI->CheckCurrentAction(gettick());
             PChar->StatusEffectContainer->AddStatusEffect(new CStatusEffect(EFFECT_HEALING, 0, 0, 10, 0));
             return;
@@ -4400,6 +4408,7 @@ void SmallPacket0x0E8(map_session_data_t* session, CCharEntity* PChar, int8* dat
     break;
     case ANIMATION_HEALING:
     {
+        PChar->status = STATUS_UPDATE;
         PChar->StatusEffectContainer->DelStatusEffect(EFFECT_HEALING);
     }
     break;
@@ -4418,6 +4427,7 @@ void SmallPacket0x0EA(map_session_data_t* session, CCharEntity* PChar, int8* dat
     if (PChar->status != STATUS_NORMAL)
         return;
 
+    PChar->status = STATUS_UPDATE;
     PChar->animation = (PChar->animation == ANIMATION_SIT ? ANIMATION_NONE : ANIMATION_SIT);
     PChar->updatemask |= UPDATE_HP;
     PChar->pushPacket(new CCharUpdatePacket(PChar));
@@ -4473,68 +4483,68 @@ void SmallPacket0x0F4(map_session_data_t* session, CCharEntity* PChar, int8* dat
         {
             if (PChar->GetMLevel() >= 60)
             {
-                PChar->loc.zone->WideScan(PChar, 300);
+                PChar->loc.zone->WideScan(PChar,300+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetMJob() == JOB_BST)
         {
             if (PChar->GetMLevel() >= 60)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 50);
+                PChar->loc.zone->WideScan(PChar,50+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetSJob() == JOB_RNG)
         {
             if (PChar->GetSLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetSLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetSJob() == JOB_BST)
         {
             if (PChar->GetSLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else if (PChar->GetSLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 50);
+                PChar->loc.zone->WideScan(PChar,50+map_config.widescan_bonus);
             }
         }
         else
@@ -4552,75 +4562,75 @@ void SmallPacket0x0F4(map_session_data_t* session, CCharEntity* PChar, int8* dat
             // Need verification
             // if (PChar->GetMLevel() >= 80)
             // {
-            //     PChar->loc.zone->WideScan(PChar,350);
+            //     PChar->loc.zone->WideScan(PChar,350+map_config.widescan_bonus);
             // }
             // else if (PChar->GetMLevel() >= 60)
             if (PChar->GetMLevel() >= 60)
             {
-                PChar->loc.zone->WideScan(PChar, 300);
+                PChar->loc.zone->WideScan(PChar,300+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetMJob() == JOB_BST)
         {
             if (PChar->GetMLevel() >= 80)
             {
-                PChar->loc.zone->WideScan(PChar, 300);
+                PChar->loc.zone->WideScan(PChar,300+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 60)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetMLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetSJob() == JOB_RNG)
         {
             if (PChar->GetSLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 250);
+                PChar->loc.zone->WideScan(PChar,250+map_config.widescan_bonus);
             }
             else if (PChar->GetSLevel() >= 20)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else if (PChar->GetSJob() == JOB_BST)
         {
             if (PChar->GetSLevel() >= 40)
             {
-                PChar->loc.zone->WideScan(PChar, 200);
+                PChar->loc.zone->WideScan(PChar,200+map_config.widescan_bonus);
             }
             else
             {
-                PChar->loc.zone->WideScan(PChar, 150);
+                PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
             }
         }
         else
         {
             // Not BST or RNG, get base scan radius only!
-            PChar->loc.zone->WideScan(PChar, 150);
+            PChar->loc.zone->WideScan(PChar,150+map_config.widescan_bonus);
         }
     }
     return;
@@ -4870,7 +4880,6 @@ void SmallPacket0x100(map_session_data_t* session, CCharEntity* PChar, int8* dat
         PChar->pushPacket(new CCharHealthPacket(PChar));
         PChar->pushPacket(new CCharStatsPacket(PChar));
         PChar->pushPacket(new CCharSkillsPacket(PChar));
-        PChar->pushPacket(new CCharRecastPacket(PChar));
         PChar->pushPacket(new CCharAbilitiesPacket(PChar));
         PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
         PChar->pushPacket(new CCharJobExtraPacket(PChar, false));
@@ -4912,6 +4921,7 @@ void SmallPacket0x102(map_session_data_t* session, CCharEntity* PChar, int8* dat
                 }
             }
             charutils::BuildingCharTraitsTable(PChar);
+            PChar->status = STATUS_UPDATE;
             PChar->pushPacket(new CCharAbilitiesPacket(PChar));
             PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
             PChar->pushPacket(new CCharJobExtraPacket(PChar, false));
@@ -4935,6 +4945,7 @@ void SmallPacket0x102(map_session_data_t* session, CCharEntity* PChar, int8* dat
                 if (spell != NULL) {
                     blueutils::SetBlueSpell(PChar, spell, spellIndex, (spellToAdd > 0));
                     charutils::BuildingCharTraitsTable(PChar);
+                    PChar->status = STATUS_UPDATE;
                     PChar->pushPacket(new CCharAbilitiesPacket(PChar));
                     PChar->pushPacket(new CCharJobExtraPacket(PChar, true));
                     PChar->pushPacket(new CCharJobExtraPacket(PChar, false));
@@ -5166,6 +5177,7 @@ void SmallPacket0x106(map_session_data_t* session, CCharEntity* PChar, int8* dat
         }
         if (BazaarIsEmpty)
         {
+            PTarget->status = STATUS_UPDATE;
             PTarget->updatemask |= UPDATE_HP;
             PTarget->nameflags.flags &= ~FLAG_BAZAAR;
             PTarget->pushPacket(new CCharUpdatePacket(PTarget));
@@ -5192,6 +5204,7 @@ void SmallPacket0x109(map_session_data_t* session, CCharEntity* PChar, int8* dat
 
         if ((PItem != NULL) && (PItem->getCharPrice() != 0))
         {
+            PChar->status = STATUS_UPDATE;
             PChar->nameflags.flags |= FLAG_BAZAAR;
             PChar->updatemask |= UPDATE_HP;
             PChar->pushPacket(new CCharUpdatePacket(PChar));
@@ -5246,6 +5259,7 @@ void SmallPacket0x10B(map_session_data_t* session, CCharEntity* PChar, int8* dat
     }
     PChar->BazaarCustomers.clear();
 
+    PChar->status = STATUS_UPDATE;
     PChar->nameflags.flags &= ~FLAG_BAZAAR;
     PChar->updatemask |= UPDATE_HP;
     PChar->pushPacket(new CCharUpdatePacket(PChar));
@@ -5389,7 +5403,7 @@ void PacketParserInitialize()
     PacketSize[0x0FA] = 0x00; PacketParser[0x0FA] = &SmallPacket0x0FA;
     PacketSize[0x0FB] = 0x00; PacketParser[0x0FB] = &SmallPacket0x0FB;
     PacketSize[0x100] = 0x04; PacketParser[0x100] = &SmallPacket0x100;
-    PacketSize[0x102] = 0x52; PacketParser[0x102] = &SmallPacket0x102;
+    PacketSize[0x102] = 0x50; PacketParser[0x102] = &SmallPacket0x102;
     PacketSize[0x104] = 0x02; PacketParser[0x104] = &SmallPacket0x104;
     PacketSize[0x105] = 0x06; PacketParser[0x105] = &SmallPacket0x105;
     PacketSize[0x106] = 0x06; PacketParser[0x106] = &SmallPacket0x106;

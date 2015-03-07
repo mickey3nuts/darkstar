@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -335,7 +335,7 @@ uint16 CBattleEntity::GetSubWeaponDmg()
 
 uint16 CBattleEntity::GetRangedWeaponDmg()
 {
-	uint16 dmg = 0;
+	uint8 dmg = 0;
 	if( m_Weapons[SLOT_RANGED] )
 	{
         if ((m_Weapons[SLOT_RANGED]->getReqLvl() > GetMLevel())  && objtype == TYPE_PC)
@@ -460,6 +460,7 @@ int32 CBattleEntity::addHP(int32 hp)
 
     if (hp != 0)
     {
+        if (status == STATUS_NORMAL) status = STATUS_UPDATE;
         updatemask |= UPDATE_HP;
     }
 
@@ -497,37 +498,86 @@ int32 CBattleEntity::addMP(int32 mp)
 
 uint16 CBattleEntity::STR()
 {
-    return dsp_cap(stats.STR + m_modStat[MOD_STR], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.STR + m_modStat[MOD_STR], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.STR + m_modStat[MOD_STR], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::DEX()
 {
-    return dsp_cap(stats.DEX + m_modStat[MOD_DEX], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.DEX + m_modStat[MOD_DEX], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.DEX + m_modStat[MOD_DEX], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::VIT()
 {
-    return dsp_cap(stats.VIT + m_modStat[MOD_VIT], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.VIT + m_modStat[MOD_VIT], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.VIT + m_modStat[MOD_VIT], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::AGI()
 {
-    return dsp_cap(stats.AGI + m_modStat[MOD_AGI], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.AGI + m_modStat[MOD_AGI], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.AGI + m_modStat[MOD_AGI], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::INT()
 {
-    return dsp_cap(stats.INT + m_modStat[MOD_INT], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.INT + m_modStat[MOD_INT], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.INT + m_modStat[MOD_INT], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::MND()
 {
-    return dsp_cap(stats.MND + m_modStat[MOD_MND], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.MND + m_modStat[MOD_MND], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.MND + m_modStat[MOD_MND], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::CHR()
 {
-    return dsp_cap(stats.CHR + m_modStat[MOD_CHR], 0, 999);
+    if (objtype == TYPE_PC)
+    {
+        return dsp_cap(stats.CHR + m_modStat[MOD_CHR], 0, 999);
+    }
+    else
+    {
+        return dsp_cap(stats.CHR + m_modStat[MOD_CHR], 0, 9999);
+    }
 }
 
 uint16 CBattleEntity::ATT()
@@ -711,7 +761,14 @@ void CBattleEntity::SetMLevel(uint8 mlvl)
 
 void CBattleEntity::SetSLevel(uint8 slvl)
 {
-	m_slvl = (slvl > (m_mlvl >> 1) ? (m_mlvl == 1 ? 1 : (m_mlvl >> 1)) : slvl);
+	if (StatusEffectContainer->HasStatusEffect(EFFECT_SJCAP_BOOST))
+	{
+		m_slvl = (slvl > ((m_mlvl * 2) / 3) ? (m_mlvl == 1 ? 1 : ((m_mlvl * 2) / 3)) : slvl);
+	}
+	else
+	{
+		m_slvl = (slvl > (m_mlvl >> 1) ? (m_mlvl == 1 ? 1 : (m_mlvl >> 1)) : slvl);
+	}
 }
 
 /************************************************************************

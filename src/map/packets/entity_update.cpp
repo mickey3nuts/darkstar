@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ CEntityUpdatePacket::CEntityUpdatePacket(CBaseEntity* PEntity, ENTITYUPDATE type
 		WBUFB(data,(0x1D)-4) = PEntity->speedsub;
 	}
 
-    if (PEntity->allegiance == ALLEGIANCE_PLAYER && PEntity->status == STATUS_MOB)
+    if (PEntity->allegiance == ALLEGIANCE_PLAYER && PEntity->status == STATUS_UPDATE)
         WBUFB(data, (0x20) - 4) = STATUS_NORMAL;
     else
         WBUFB(data, (0x20) - 4) = PEntity->status;

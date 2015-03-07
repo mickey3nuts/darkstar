@@ -9,7 +9,7 @@ require("scripts/zones/RuAun_Gardens/TextIDs");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

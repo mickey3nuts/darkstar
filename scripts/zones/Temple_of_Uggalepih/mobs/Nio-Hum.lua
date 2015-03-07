@@ -10,7 +10,7 @@ require("scripts/globals/keyitems");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
@@ -18,7 +18,7 @@ end;
 -----------------------------------
 
 function onMobDeath(mob, killer)
-
+	
 	if(killer:getCurrentMission(SANDORIA) == LIGHTBRINGER and killer:getVar("Mission8-2Kills") < 2) then
 		local kills = killer:getVar("Mission8-2Kills");
 		killer:setVar("Mission8-2Kills",kills + 1);

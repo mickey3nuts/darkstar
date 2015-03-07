@@ -1,13 +1,13 @@
 -----------------------------------
 -- mob : Fomor Warrior
--- zone : Phomiuna_Aqueducts
+-- zone : Phomiuna_Aqueducts  
 -----------------------------------
 
 -----------------------------------
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------

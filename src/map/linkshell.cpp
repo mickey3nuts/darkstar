@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -223,6 +223,8 @@ void CLinkshell::ChangeMemberRank(int8* MemberName, uint8 toSack)
                 charutils::SaveCharStats(PMember);
                 charutils::SaveCharEquip(PMember);
 
+                if (PMember->status == STATUS_NORMAL) PMember->status = STATUS_UPDATE;
+
                 PMember->pushPacket(new CInventoryFinishPacket());
                 PMember->pushPacket(new CCharUpdatePacket(PMember));
 			    return;
@@ -293,6 +295,8 @@ void CLinkshell::RemoveMemberByName(int8* MemberName)
 	        
             charutils::SaveCharStats(PMember);
             charutils::SaveCharEquip(PMember);
+
+            if (PMember->status == STATUS_NORMAL) PMember->status = STATUS_UPDATE;
 
             PMember->pushPacket(new CInventoryFinishPacket());
             PMember->pushPacket(new CCharUpdatePacket(PMember));

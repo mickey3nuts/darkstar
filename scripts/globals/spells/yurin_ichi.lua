@@ -17,8 +17,9 @@ function onSpellCast(caster,target,spell)
     local effect = EFFECT_INHIBIT_TP;
     -- Base Stats
     local dINT = (caster:getStat(MOD_INT) - target:getStat(MOD_INT));
+    local bonus = AffinityBonus(caster, spell:getElement());
     --Duration Calculation
-    local resist = applyResistance(caster,spell,target,dINT,NINJUTSU_SKILL,0);
+    local resist = applyResistance(caster,spell,target,dINT,NINJUTSU_SKILL,bonus);
     --Base power is 10 and is not affected by resistaces.
     local power = 10;
 

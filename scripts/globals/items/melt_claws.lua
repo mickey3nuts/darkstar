@@ -1,25 +1,30 @@
 -----------------------------------------
 -- ID: 18357
 -- Item: Melt Claws
--- Additional Effect: Weakens defense
--- TODO: Enchantment: Weakens defense
+-- Item Effect: Defense Down 20% on Target
+-- Charges: 15  Duration: 90 Secs
 -----------------------------------------
 
 require("scripts/globals/status");
-require("scripts/globals/magic");
+require("scripts/globals/settings");
 
------------------------------------
--- onAdditionalEffect Action
------------------------------------
+-----------------------------------------
+-- OnItemCheck
+-----------------------------------------
 
-function onAdditionalEffect(player,target,damage)
-    local chance = 10;
-
-    if (math.random(0,99) >= chance or applyResistanceAddEffect(player,target,ELE_WIND,0) <= 0.5) then
-        return 0,0,0;
-    else
-        target:delStatusEffect(EFFECT_DEFENSE_BOOST);
-        target:addStatusEffect(EFFECT_DEFENSE_DOWN, 12, 0, 60);
-        return SUBEFFECT_DEFENSE_DOWN, 160, EFFECT_DEFENSE_DOWN;
-    end
+function onItemCheck(target)
+    return 0;
 end;
+
+-----------------------------------------
+-- OnItemUse
+-----------------------------------------
+
+function onItemUse(target)
+	if(target:hasStatusEffect(EFFECT_DEFENSE_DOWN) == false) then
+		target:addStatusEffect(EFFECT_DEFENSE_DOWN,20,0,90);
+	else
+		target:messageBasic(423);
+	end
+end;
+

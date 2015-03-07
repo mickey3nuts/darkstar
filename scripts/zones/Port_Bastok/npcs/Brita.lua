@@ -4,9 +4,11 @@
 --  Type: Standard NPC
 -- @zone: 236
 --  @pos 58.161 -3.101 -6.695
+--
+-- Auto-Script: Requires Verification (Verified by Brawndo)
 -----------------------------------
-
 package.loaded["scripts/zones/Port_Bastok/TextIDs"] = nil;
+-----------------------------------
 
 -----------------------------------
 -- onTrade Action
@@ -20,7 +22,7 @@ end;
 -----------------------------------
 
 function onTrigger(player,npc)
-	player:startEvent(0x015a, 0, 1);
+	player:startEvent(0x015a);
 end;
 
 -----------------------------------

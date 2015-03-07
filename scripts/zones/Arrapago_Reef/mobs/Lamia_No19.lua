@@ -9,18 +9,18 @@ require("scripts/globals/titles");
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobEngaged Action
 -----------------------------------
 
-function onMobEngaged(mob,target)
-
+function OnMobEngaged(mob,target)
+	
 	SpawnMob(16998869,180):updateEnmity(target);
 	SpawnMob(16998870,180):updateEnmity(target);
-
+	
 end;
 
 -----------------------------------

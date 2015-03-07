@@ -9,17 +9,17 @@
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobDeath Action
 -----------------------------------
 
-function onMobDeath(mob, player)
-
+function onMobDeath(mob, player)	
+	
 	if(player:getVar("aCraftsmanWork") == 1) then
 		player:setVar("Decurio_I_IIIKilled",1);
-	end
-
+	end	
+	
 end;

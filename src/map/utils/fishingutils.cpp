@@ -1,7 +1,7 @@
 ﻿/*
 ===========================================================================
 
-  Copyright (c) 2010-2015 Darkstar Dev Teams
+  Copyright (c) 2010-2014 Darkstar Dev Teams
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -125,6 +125,7 @@ void StartFishing(CCharEntity* PChar)
 		return;
 	}
 
+	PChar->status = STATUS_UPDATE;
 	PChar->animation = ANIMATION_FISHING_START;
     PChar->updatemask |= UPDATE_HP;
 
@@ -439,6 +440,8 @@ void FishingAction(CCharEntity* PChar, FISHACTION action, uint16 stamina)
 		}
 		break;
 	}
+
+	PChar->status = STATUS_UPDATE;
 			
 	PChar->pushPacket(new CCharUpdatePacket(PChar));
 	PChar->pushPacket(new CCharSyncPacket(PChar));

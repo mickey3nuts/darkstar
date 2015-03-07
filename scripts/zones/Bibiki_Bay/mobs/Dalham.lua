@@ -7,14 +7,14 @@
 -- onMobSpawn Action
 -----------------------------------
 
-function onMobSpawn(mob)
+function OnMobSpawn(mob)
 end;
 
 -----------------------------------
 -- onMobFight Action
 -----------------------------------
 
-function onMobFight(mob,target)
+function onMobFight(mob,target)	
 end;
 
 -----------------------------------

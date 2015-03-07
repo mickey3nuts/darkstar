@@ -12,11 +12,11 @@ require("scripts/globals/status");
 require("scripts/globals/bluemagic");
 
 -----------------------------------------
--- onMagicCastingCheck
+-- OnSpellCast
 -----------------------------------------
 
 function onMagicCastingCheck(caster,target,spell)
-    return 0;
+	return 0;
 end;
 
 -----------------------------------------
@@ -25,10 +25,11 @@ end;
 
 function onSpellCast(caster,target,spell)
     local duration = math.random(60,180);
+    local bonus = AffinityBonus(caster, spell:getElement());
     local pINT = caster:getStat(MOD_INT);
     local mINT = target:getStat(MOD_INT);
     local dINT = (pINT - mINT);
-    local resist = applyResistance(caster,spell,target,dINT,BLUE_SKILL,0);
+    local resist = applyResistance(caster,spell,target,dINT,BLUE_SKILL,bonus);
 
     if(resist < 0.5) then
         spell:setMsg(85); --resist message

@@ -19,8 +19,9 @@ function onSpellCast(caster,target,spell)
     local effect = EFFECT_PARALYSIS;
     -- Base Stats
     local dINT = (caster:getStat(MOD_INT) - target:getStat(MOD_INT));
+    local bonus = AffinityBonus(caster, spell:getElement());
     --Duration Calculation
-    local duration = 420 * applyResistance(caster,spell,target,dINT,NINJUTSU_SKILL,0);
+    local duration = 420 * applyResistance(caster,spell,target,dINT,NINJUTSU_SKILL,bonus);
     --Paralyze base power is 35 and is not affected by resistaces.
     local power = 35;
 
