@@ -72,12 +72,20 @@ function onEventFinish(player,csid,option)
 			player:delStatusEffect(EFFECT_SIGIL);
 			player:delStatusEffect(EFFECT_SANCTION);
 			player:delStatusEffect(EFFECT_SIGNET);
+<<<<<<< HEAD
 			duration = getSanctionDuration(player);
 
 			if(option == 16 or option == 32) then -- refresh and regen sanction
 				tick = 3;
 			else
 				tick = 0;
+=======
+			local duration = getSanctionDuration(player);
+
+			local tick = 0;
+			if(option == 16 or option == 32) then -- refresh and regen sanction
+				tick = 3;
+>>>>>>> c91db6bd4e5c3d13dcfd2882db651fd0129d25c9
 			end;
 
 			player:addStatusEffect(EFFECT_SANCTION,option / 16,tick,duration); -- effect size 1 = regen, 2 = refresh, 3 = food.
@@ -100,4 +108,8 @@ function onEventFinish(player,csid,option)
 		end;
 	end;
 
+<<<<<<< HEAD
 end;
+=======
+end;
+>>>>>>> c91db6bd4e5c3d13dcfd2882db651fd0129d25c9
