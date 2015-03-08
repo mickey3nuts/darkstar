@@ -1,0 +1,7 @@
+
+Memory manager: Memory leaks found at 2015/02/22 09h16m58s.
+0001 : c:\darkstar\src\map\map.cpp line 1168 size 5 address 0x03070084
+0002 : c:\darkstar\src\map\map.cpp line 1172 size 5 address 0x030700A4
+0003 : c:\darkstar\src\map\map.cpp line 1240 size 10 address 0x030700E4
+0004 : c:\darkstar\src\common\strlib.cpp line 1004 size 1025 address 0x0346CE14
+0005 : c:\darkstar\src\common\sql.cpp line 75 size 1008 address 0x03476E0C
