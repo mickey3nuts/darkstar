@@ -10,7 +10,7 @@ cmdprops =
     parameters = "iiii"
 };
 function onTrigger(player)
-       SpawnMob('17297441'); -- KB
+   SpawnMob('17297441'); -- KB
    SpawnMob('17408018'); -- Fafnir
    SpawnMob('17301538'); -- Aspi
    SpawnMob('17301537'); -- Adamantoise
@@ -19,7 +19,7 @@ function onTrigger(player)
    SpawnMob('17268851'); -- Deadly Dodo
    SpawnMob('16806215'); -- Xolotl
    SpawnMob('17231971'); -- Nue
-       SpawnMob('17404333'); -- Voluptuous Vivian
+   SpawnMob('17404333'); -- Voluptuous Vivian
    SpawnMob('17645755'); -- Ungur
    SpawnMob('17649731'); -- LoO
    SpawnMob('17199438'); -- VE

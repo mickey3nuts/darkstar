@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------------------------
--- func: poskirin
--- auth: <Unknown> :: Modded by mickey3nuts
--- desc: Move's the player to Kirin's pop location.
+-- func: @poskirin
+-- auth: <Unknown> :: (Initally from Tagban) Modded by mickey3nuts
+-- desc: Moves the player to Kirin's pop location.
 ---------------------------------------------------------------------------------------------------
 
 cmdprops =
