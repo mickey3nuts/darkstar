@@ -1,7 +1,7 @@
 /*
 ===========================================================================
 
-Copyright (c) 2010-2014 Darkstar Dev Teams
+Copyright (c) 2010-2015 Darkstar Dev Teams
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,21 +25,25 @@ This file is part of DarkStar-server source code.
 #include <queue>
 
 #include "message.h"
-#include "utils/zoneutils.h"
-#include "utils/jailutils.h"
-#include "entities/charentity.h"
+
 #include "party.h"
 #include "alliance.h"
+
+#include "entities/charentity.h"
 
 #include "packets/message_standard.h"
 #include "packets/party_invite.h"
 #include "packets/server_ip.h"
 
+#include "utils/charutils.h"
+#include "utils/zoneutils.h"
+#include "utils/jailutils.h"
+
 namespace message
 {
 	zmq::context_t zContext;
-	zmq::socket_t* zSocket = NULL;
-	Sql_t* ChatSqlHandle = NULL;
+	zmq::socket_t* zSocket = nullptr;
+	Sql_t* ChatSqlHandle = nullptr;
     std::mutex send_mutex;
     std::queue<chat_message_t> message_queue;
 
@@ -79,7 +83,8 @@ namespace message
                 else
                 {
                     PChar->status = STATUS_SHUTDOWN;
-                    PChar->pushPacket(new CServerIPPacket(PChar, 1,0));
+                    //won't save their position (since this is the wrong thread) but not a huge deal
+                    PChar->pushPacket(new CServerIPPacket(PChar, 1, 0));
                 }
                 break;
             }
@@ -112,7 +117,7 @@ namespace message
 				{
 					if (PChar->PParty)
 					{
-						if (PChar->PParty->m_PAlliance != NULL)
+						if (PChar->PParty->m_PAlliance != nullptr)
 						{
 							for (uint8 i = 0; i < PChar->PParty->m_PAlliance->partyList.size(); ++i)
 							{
@@ -250,7 +255,7 @@ namespace message
 						}
 						else
 						{
-							if (PInviter->PParty == NULL)
+							if (PInviter->PParty == nullptr)
 							{
 								CParty* PParty = new CParty(PInviter, ChatSqlHandle);
 							}
@@ -451,7 +456,7 @@ namespace message
         {
             zSocket->close();
             delete zSocket;
-            zSocket = NULL;
+            zSocket = nullptr;
         }
         zContext.close();
     }
